@@ -1,15 +1,16 @@
 <?php
+
 namespace Asseco\ContentFileStorageDriver;
 
 use Asseco\Chassis\App\Facades\Iam;
+use Exception;
 use Illuminate\Http\Client\RequestException;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Http\Client\Response;
-use Exception;
 
-class ContentClient {
-
+class ContentClient
+{
     private $token = '';
 
     private $baseURL = '';
@@ -21,7 +22,7 @@ class ContentClient {
     public function __construct($baseURL = null, $baseRestAPIUrl = null, $defaultRepository = null)
     {
         $this->baseURL = $baseURL ?? $this->baseURL;
-        $this->baseRestAPIUrl = $baseRestAPIUrl ?? $this->baseRestAPIUrl ;
+        $this->baseRestAPIUrl = $baseRestAPIUrl ?? $this->baseRestAPIUrl;
         $this->defaultRepository = $defaultRepository ?? $this->defaultRepository;
         $this->token = Iam::getServiceToken();
     }
@@ -42,6 +43,7 @@ class ContentClient {
                     $payload
                 );
             Log::info('response: ' . print_r($response, true));
+
             return $response;
         } catch (Exception | RequestException $e) {
             Log::error("Couldn't get response: " . print_r($e->getMessage(), true));
@@ -55,6 +57,7 @@ class ContentClient {
     public function getRepositories()
     {
         $url = $this->baseURL . $this->baseRestAPIUrl . 'repositories';
+
         return $this->setClient('GET', $url)->object();
     }
 
@@ -66,9 +69,10 @@ class ContentClient {
     /**
      * @throws Exception
      */
-    public function listFolder($folder = '', $recursive = false, $per_page  = 100, $page = 0)
+    public function listFolder($folder = '', $recursive = false, $per_page = 100, $page = 0)
     {
         $url = $this->baseURL . $this->baseRestAPIUrl . $this->defaultRepository . '/' . $folder;
+
         return $this->setClient('GET', $url)->object();
     }
 
@@ -82,8 +86,9 @@ class ContentClient {
             'name'              => $name,
             'path'              => $path,
             'kind'              => 'folder',
-            'folder-purpose'    => 'generic-folder'
+            'folder-purpose'    => 'generic-folder',
         ];
+
         return $this->setClient('POST', $url, $payload)->object();
     }
 
@@ -95,16 +100,17 @@ class ContentClient {
         if ($recursive) {
             $fullPath = '';
             $folders = array_reverse(explode('/', $path));
-            foreach($folders as $folder) {
+            foreach ($folders as $folder) {
                 $fullPath .= '/' . $folder;
-                if (! $this->folderExist($fullPath, false)) {
+                if (!$this->folderExist($fullPath, false)) {
                     $this->createFolder($folder, dirname($fullPath));
                 }
             }
         }
         $url = $this->baseURL . $this->baseRestAPIUrl . $this->defaultRepository . $path . '/metadata';
         $response = $this->setClient('GET', $url);
-        return in_array($response->status() , [200, 440]) ;
+
+        return in_array($response->status(), [200, 440]);
     }
 
     /**
@@ -113,6 +119,7 @@ class ContentClient {
     public function getMetadata($path)
     {
         $url = $this->baseURL . $this->baseRestAPIUrl . $this->defaultRepository . $path . '/metadata';
+
         return $this->setClient('GET', $url)->object();
     }
 
@@ -122,6 +129,7 @@ class ContentClient {
     public function getFile($filename = '/')
     {
         $url = $this->baseURL . $this->baseRestAPIUrl . $this->defaultRepository . '/documents/' . $filename;
+
         return $this->setClient('GET', $url);
     }
 
@@ -132,7 +140,8 @@ class ContentClient {
     {
         $deleteContentWithSubFolders = $deleteContentWithSubFolders ? 'true' : 'false';
         $folderId = $this->getMetadata($folder);
-        $url = $this->baseURL . $this->baseRestAPIUrl . $this->defaultRepository . '/folders/' . $folderId->id .'?delete-content-and-subfolders=' . $deleteContentWithSubFolders;
+        $url = $this->baseURL . $this->baseRestAPIUrl . $this->defaultRepository . '/folders/' . $folderId->id . '?delete-content-and-subfolders=' . $deleteContentWithSubFolders;
+
         return $this->setClient('DELETE', $url)->object();
     }
 
@@ -143,6 +152,7 @@ class ContentClient {
     {
         $filenameId = $this->getMetadata($path);
         $url = $this->baseURL . $this->baseRestAPIUrl . $this->defaultRepository . '/documents/' . $filenameId->id;
+
         return $this->setClient('DELETE', $url)->object();
     }
 
@@ -152,6 +162,7 @@ class ContentClient {
     public function searchFolders($search)
     {
         $url = $this->baseURL . $this->baseRestAPIUrl . $this->defaultRepository . '/search?q=' . $search;
+
         return $this->setClient('GET', $url)->object();
     }
 
@@ -170,10 +181,10 @@ class ContentClient {
             'media-type'            => $content->getClientMimeType(),
             'filing-purpose'        => $purpose ?? 'service',
             'filing-case-number'    => $caseNumber ?? 'record id',
-            'overwrite-if-exists'   => $overwriteIfExists ? 'true' : 'false'
+            'overwrite-if-exists'   => $overwriteIfExists ? 'true' : 'false',
         ];
 
-         $r = Http::withToken($this->token)
+        $r = Http::withToken($this->token)
             ->withHeaders([
                 'Allow' => 'application/json',
             ])
@@ -185,11 +196,10 @@ class ContentClient {
     }
 
     /**
-     *
      * @return array
      * @throws Exception
      */
-    public function moveFile($sourceFile, $destinationFolder, $destinationRepo=null, $overwriteIfExists = true)
+    public function moveFile($sourceFile, $destinationFolder, $destinationRepo = null, $overwriteIfExists = true)
     {
         $sourceFile = $this->getMetadata($sourceFile);
         $folder = $this->getMetadata($destinationFolder);
@@ -199,6 +209,7 @@ class ContentClient {
             'destination-repo'          => $destinationRepo ?? $this->defaultRepository,
             'overwrite'                 => $overwriteIfExists,
         ];
+
         return $this->setClient('POST', $url, $payload)->object();
     }
 
@@ -210,9 +221,8 @@ class ContentClient {
      */
     public function read($path)
     {
-        #$path = urlencode($path);
+        //$path = urlencode($path);
         $metadata = $this->getMetadata($path);
-
 
         return $metadata;
     }
@@ -240,7 +250,7 @@ class ContentClient {
      */
     public function readRaw($path)
     {
-        #$path = urlencode($path);
+        //$path = urlencode($path);
 
         $response = $this->getFile($path);
 
@@ -258,10 +268,10 @@ class ContentClient {
      */
     public function upload(string $path, $contents, string $message, string $caseId = null, bool $override = false)
     {
-        #$path = urlencode($path);
-        #return $this->responseContents(
+        //$path = urlencode($path);
+        //return $this->responseContents(
         return $this->uploadFile($path, $contents, $message, $caseId, $override);
-        #);
+        //);
     }
 
     /**
@@ -276,7 +286,7 @@ class ContentClient {
     public function uploadStream(string $path, $resource, string $message, bool $override = false): array
     {
         if (!is_resource($resource)) {
-            throw new Exception(sprintf('Argument must be a valid resource type. %s given.',  gettype($resource)));
+            throw new Exception(sprintf('Argument must be a valid resource type. %s given.', gettype($resource)));
         }
 
         return $this->upload($path, stream_get_contents($resource), $message, $override);
@@ -290,7 +300,7 @@ class ContentClient {
      */
     public function delete(string $path)
     {
-        #$path = urlencode($path);
+        //$path = urlencode($path);
 
         return $this->deleteFile($path);
     }
@@ -338,7 +348,7 @@ class ContentClient {
     private function responseHasNextPage(Response $response): bool
     {
         if ($response->hasHeader('X-Next-Page')) {
-            return !empty($response->getHeader('X-Next-Page')[0] ?? "");
+            return !empty($response->getHeader('X-Next-Page')[0] ?? '');
         }
 
         return false;

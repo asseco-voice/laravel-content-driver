@@ -12,23 +12,22 @@ return [
     */
 
     /**
-     * Personal access token
-     *
+     * Personal access token.
      */
     'token'                 => null,
 
     /**
-     * Base URL of Content server you want to use
+     * Base URL of Content server you want to use.
      */
     'baseURL'               => 'http://10.135.11.98:7075',
 
     /**
-     * RestAPI that should be used
+     * RestAPI that should be used.
      */
     'baseRestAPIUrl'        => '/v1/content/',
 
     /**
-     * Repository that should be used for default
+     * Repository that should be used for default.
      */
     'defaultRepository'     => 'dms',
 ];

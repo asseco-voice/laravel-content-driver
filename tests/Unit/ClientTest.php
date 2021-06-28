@@ -2,12 +2,9 @@
 
 namespace Asseco\ContentFileStorageDriver\Tests;
 
-use GuzzleHttp\Exception\ClientException;
 use Asseco\ContentFileStorageDriver\ContentClient;
 use Exception;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Log;
-use phpDocumentor\Reflection\Types\Integer;
 
 class ClientTest extends TestCase
 {
@@ -17,13 +14,10 @@ class ClientTest extends TestCase
     protected ContentClient $client;
 
     /**
-     * random_id
+     * random_id.
      */
     private int $testCaseId;
 
-    /**
-     *
-     */
     public function setUp(): void
     {
         parent::setUp();
@@ -57,8 +51,7 @@ class ClientTest extends TestCase
     public function is_folder_unittest_exists_delete_all()
     {
         $this->withoutExceptionHandling();
-        if($this->client->folderExist('/unittest1'))
-        {
+        if ($this->client->folderExist('/unittest1')) {
             $this->client->deleteFolders('/unittest1', true);
         }
         $metadata = $this->client->createFolder('unittest1', '/');
@@ -66,7 +59,6 @@ class ClientTest extends TestCase
         $this->assertObjectHasAttribute('created-by', $metadata);
         $this->assertObjectHasAttribute('changed-on', $metadata);
     }
-
 
     /**
      * @test
@@ -82,7 +74,6 @@ class ClientTest extends TestCase
         $this->assertTrue('testing_' . $this->testCaseId . '.txt' === $contents->name);
     }
 
-
     /**
      * @test
      * @throws \GuzzleHttp\Exception\GuzzleException
@@ -92,8 +83,7 @@ class ClientTest extends TestCase
     {
         $this->withoutExceptionHandling();
         $metadata = $this->client->getMetadata('/unittest1/testing_' . $this->testCaseId . '.txt');
-        if($metadata)
-        {
+        if ($metadata) {
             $data = $this->client->getFile('/unittest1/testing_' . $this->testCaseId . '.txt')->getBody()->getContents();
             $this->assertStringStartsWith('File for testing file streams', $data);
 
@@ -109,6 +99,6 @@ class ClientTest extends TestCase
     public function it_can_z_delete_a_file()
     {
         $this->withoutExceptionHandling();
-        #$this->client->delete('/unittest1/testing_' . $this->testCaseId . '.txt');
+        //$this->client->delete('/unittest1/testing_' . $this->testCaseId . '.txt');
     }
 }

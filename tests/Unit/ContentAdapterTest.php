@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace Asseco\ContentFileStorageDriver\Tests;
 
+use Asseco\ContentFileStorageDriver\ContentAdapter;
+use Asseco\ContentFileStorageDriver\ContentClient;
+use Exception;
 use GuzzleHttp\Exception\GuzzleException;
 use League\Flysystem\Config;
-
-use League\Flysystem\FilesystemException;
-use Asseco\ContentFileStorageDriver\ContentClient;
-use Asseco\ContentFileStorageDriver\ContentAdapter;
-use Exception;
 
 class ContentAdapterTest extends TestCase
 {
@@ -21,11 +19,10 @@ class ContentAdapterTest extends TestCase
 
     public function setUp(): void
     {
-        #parent::setUp();
+        //parent::setUp();
 
         $this->contentAdapter = $this->getAdapterInstance();
     }
-
 
     public function it_can_be_instantiated()
     {
@@ -96,5 +93,4 @@ class ContentAdapterTest extends TestCase
 
         $this->assertFalse($this->contentAdapter->fileExists('/I_DONT_EXIST.md'));
     }
-
 }
