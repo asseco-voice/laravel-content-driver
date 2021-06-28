@@ -3,7 +3,7 @@
 namespace Asseco\ContentFileStorageDriver;
 
 use Exception;
-#use GuzzleHttpException\GuzzleException;
+#use GuzzleHttpException\ClientException;
 use GuzzleHttp\Exception\GuzzleException;
 use JetBrains\PhpStorm\ArrayShape;
 use League\Flysystem\Adapter\AbstractAdapter;
@@ -12,9 +12,7 @@ use League\Flysystem\Config;
 use League\Flysystem\Util\MimeType;
 use League\MimeTypeDetection\ExtensionMimeTypeDetector;
 use DateTime;
-#use GuzzleHttpException\ClientException;
 use League\Flysystem\FilesystemException;
-
 
 
 /**
@@ -75,7 +73,7 @@ class ContentAdapter extends AbstractAdapter
      * @return bool|array
      * @throws Exception|GuzzleException
      */
-    public function write($path, $contents, Config $config): bool|array
+    public function write($path, $contents, Config $config): mixed
     {
         try {
             $override = $this->fileExists($path);
@@ -124,7 +122,7 @@ class ContentAdapter extends AbstractAdapter
      *
      * @throws Exception
      */
-    public function readStream($path): bool|array|null
+    public function readStream($path): mixed
     {
         try {
             if (null === ($resource = $this->client->readStream($path))) {
@@ -232,7 +230,7 @@ class ContentAdapter extends AbstractAdapter
      * @return bool|DateTime
      * @throws Exception
      */
-    public function lastModified(string $path): bool|DateTime
+    public function lastModified(string $path): mixed
     {
         try {
             $response = $this->client->getMetadata($path);
@@ -252,8 +250,11 @@ class ContentAdapter extends AbstractAdapter
     public function fileSize(string $path): mixed
     {
         try {
-            $meta = $this->client->read($path);
-            return $meta['size'][0] ?? 0;
+            // TODO:
+            #$meta = $this->client->getMetadata($path);
+            #$meta = $this->client->read($path);
+            #return $meta['size'][0] ?? 0;
+            return 0;
         } catch (Exception $e) {
             throw new Exception('Unable to retrieve Metadata sileSize: ' . $path . ' ' . $e->getMessage());
         }
@@ -268,29 +269,9 @@ class ContentAdapter extends AbstractAdapter
     public function listContents($directory = '', $recursive = false)
     {
         try {
-
-            $tree = $this->client->tree($directory, $recursive);
-            
-            foreach ($tree as $folders) {
-                foreach ($folders as $item) {
-                    #$isDirectory = $item['type'] == 'tree';
-        
-                    yield $item;
-                    /*
-                     $isDirectory ? new DirectoryAttributes($item['path'], null, null) : new FileAttributes(
-                        $item['path'],
-                        $this->fileSize($item['path'])->fileSize(),
-                        null,
-                        $this->lastModified($item['path'])->lastModified(),
-                        $this->mimeTypeDetector->detectMimeTypeFromPath($item['path'])
-                    );
-                    */
-                }
-            }
-
-            return ;
+            return $this->client->listFolder($directory, $recursive);
         } catch (Exception $e) {
-            throw new Exception('Unable to retrieve FileTree from: ' . $directory . ' ' . $e->getMessage());
+            throw new Exception('Unable to retrieve from: ' . $directory . ' ' . $e->getMessage());
         }
     }
 
@@ -324,7 +305,7 @@ class ContentAdapter extends AbstractAdapter
     {
         try {
             $contents = $this->client->readRaw($path);
-            $this->client->upload($newpath, $contents,null, true);
+            $this->client->upload($newpath, $contents,'copy file', 'some id', true);
             return true;
         } catch (Exception $e) {
             throw new Exception('Unable to copy file from: ' . $path . ' to: ' . $newpath . ' ' . $e->getMessage());
@@ -386,7 +367,7 @@ class ContentAdapter extends AbstractAdapter
      * @return bool|array
      * @throws Exception
      */
-    public function rename($path, $newpath): bool|array
+    public function rename($path, $newpath): bool
     {
         return $this->move($path, $newpath);
     }
@@ -413,7 +394,7 @@ class ContentAdapter extends AbstractAdapter
      * @return array|false
      * @throws Exception
      */
-    public function createDir($dirname, Config $config): bool|array
+    public function createDir($dirname, Config $config): bool
     {
         $path = $this->applyPathPrefix($dirname);
 
@@ -453,7 +434,7 @@ class ContentAdapter extends AbstractAdapter
      * @param string $path
      * @return array
      */
-    #[ArrayShape(['mimetype' => "string"])] public function getMimetype($path): array
+    public function getMimetype($path): array
     {
         return ['mimetype' => MimeType::detectByFilename($path)];
     }
@@ -478,9 +459,10 @@ class ContentAdapter extends AbstractAdapter
 
     /**
      * @param string $path
-     * @return array|false|void
+     * @return false
+     * @throws Exception
      */
-    public function getVisibility($path)
+    public function getVisibility($path): bool
     {
         throw new Exception('Unable to set visibility : ' . $path . ' ' . get_class($this) . ' Content API does not support visibility.');
     }
@@ -490,7 +472,7 @@ class ContentAdapter extends AbstractAdapter
      * @return array|bool
      * @throws Exception
      */
-    public function has($path): array|bool
+    public function has($path): bool
     {
         return $this->getMetadata($path);
     }

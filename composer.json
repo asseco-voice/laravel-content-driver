@@ -1,46 +1,39 @@
 {
-    "name": "academe/laravel-azure-file-storage-driver",
-    "description": "Azure File Storage filesystem driver for Laravel",
-    "homepage": "https://github.com/academe",
-    "license": "MIT",
-    "authors": [
-        {
-            "name": "Jason Judge",
-            "email": "jason@academe.co.uk"
-        }
-    ],
-    "support": {
-        "issues": "https://github.com/academe/laravel-azure-file-storage-driver/issues"
-    },
+    "name": "asseco/flysystem-content-storage",
+    "description": "Flysystem Adapter for the Content microservice",
     "keywords": [
         "laravel",
+        "flysystem",
         "driver",
-        "azure",
-        "file storage"
+        "content",
+        "laravel-storage"
     ],
+    "type": "library",
+    "license": "MIT",
+    "require": {
+        "php": "^7.4 || ^8.0",
+        "laravel/framework": "^8.0",
+        "ext-json": "*",
+        "guzzlehttp/guzzle": "^6.3",
+        "league/flysystem": "^1.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.0",
+        "mockery/mockery": "^1.3.1",
+        "fakerphp/faker": "^1.9.1",
+        "orchestra/testbench": "^6.0"
+    },
     "autoload": {
         "psr-4": {
-            "Academe\\Laravel\\AzureFileStorageDriver\\": "laravel-azure-file-storage-driver/src"
+            "Asseco\\ContentFileStorageDriver\\": "src"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Academe\\Laravel\\AzureFileStorageDriver\\Tests\\": "tests"
+            "Asseco\\ContentFileStorageDriver\\Tests\\": "tests"
         }
     },
-    "require": {
-        "php": ">=7.0",
-        "consilience/flysystem-azure-file-storage": "^0.1.1"
-    },
-    "require-dev": {
-        "phpunit/phpunit": "^6.0|^7.0",
-        "orchestra/testbench": "~3.3|~3.4|~3.5|~3.6"
-    },
-    "extra": {
-        "laravel": {
-            "providers": [
-                "Academe\\Laravel\\AzureFileStorageDriver\\ServiceProvider"
-            ]
-        }
+    "config": {
+        "sort-packages": true
     }
 }
