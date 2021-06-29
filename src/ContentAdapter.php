@@ -2,23 +2,15 @@
 
 namespace Asseco\ContentFileStorageDriver;
 
-use Exception;
-#use GuzzleHttpException\ClientException;
-use GuzzleHttp\Exception\GuzzleException;
-use JetBrains\PhpStorm\ArrayShape;
-use League\Flysystem\Adapter\AbstractAdapter;
-use League\Flysystem\Adapter\Polyfill\NotSupportingVisibilityTrait;
-use League\Flysystem\Config;
-use League\Flysystem\Util\MimeType;
-use League\MimeTypeDetection\ExtensionMimeTypeDetector;
 use DateTime;
-use League\Flysystem\FilesystemException;
-
+//use GuzzleHttpException\ClientException;
+use Exception;
+use League\Flysystem\Adapter\AbstractAdapter;
+use League\Flysystem\Config;
+use League\MimeTypeDetection\ExtensionMimeTypeDetector;
 
 /**
- * Class ContentAdapter
- *
- * @package Content\Flysystem
+ * Class ContentAdapter.
  */
 class ContentAdapter extends AbstractAdapter
 {
@@ -26,12 +18,12 @@ class ContentAdapter extends AbstractAdapter
      * @var ContentClient
      */
     protected ContentClient $client;
-    
+
     /**
      * @var ExtensionMimeTypeDetector
      */
     protected ExtensionMimeTypeDetector $mimeTypeDetector;
-    
+
     /**
      * ContentAdapter constructor.
      *
@@ -40,7 +32,7 @@ class ContentAdapter extends AbstractAdapter
      */
     public function __construct(ContentClient $client, string $prefix = '')
     {
-        $this->setClient($client) ;
+        $this->setClient($client);
         $this->setPathPrefix($prefix);
         $this->mimeTypeDetector = new ExtensionMimeTypeDetector();
     }
@@ -59,7 +51,7 @@ class ContentAdapter extends AbstractAdapter
             if ($e instanceof Exception && $e->getCode() == 404) {
                 return false;
             }
-	        throw new Exception('Unable to check file existence for: ' . $path);
+            throw new Exception('Unable to check file existence for: ' . $path);
         }
 
         return true;
@@ -77,6 +69,7 @@ class ContentAdapter extends AbstractAdapter
     {
         try {
             $override = $this->fileExists($path);
+
             return (bool) $this->client->upload($path, $contents, $override);
         } catch (Exception $e) {
             throw new Exception('Unable to write file to: ' . $path . ' ' . $e->getMessage());
@@ -95,6 +88,7 @@ class ContentAdapter extends AbstractAdapter
     {
         try {
             $override = $this->fileExists($path);
+
             return (bool) $this->client->uploadStream($path, $resource, $override);
         } catch (Exception $e) {
             throw new Exception('Unable to write file to: ' . $path . ' ' . $e->getMessage());
@@ -114,7 +108,7 @@ class ContentAdapter extends AbstractAdapter
     public function update($path, $contents, Config $config): bool
     {
         try {
-            return (bool) $this->client->upload($path, $contents, null,true);
+            return (bool) $this->client->upload($path, $contents, null, true);
         } catch (Exception $e) {
             throw new Exception('Unable to update file to: ' . $path . ' ' . $e->getMessage());
         }
@@ -133,7 +127,7 @@ class ContentAdapter extends AbstractAdapter
     public function updateStream($path, $resource, Config $config): bool
     {
         try {
-            return (bool) $this->client->upload($path, $resource, null,true);
+            return (bool) $this->client->upload($path, $resource, null, true);
         } catch (Exception $e) {
             throw new Exception('Unable to update stream to: ' . $path . ' ' . $e->getMessage());
         }
@@ -152,7 +146,7 @@ class ContentAdapter extends AbstractAdapter
     public function put($path, $resource, Config $config): bool
     {
         try {
-            return (bool) $this->client->upload($path, $resource, null,true);
+            return (bool) $this->client->upload($path, $resource, null, true);
         } catch (Exception $e) {
             throw new Exception('Unable to update stream to: ' . $path . ' ' . $e->getMessage());
         }
@@ -171,7 +165,7 @@ class ContentAdapter extends AbstractAdapter
     public function putStream($path, $resource, Config $config): bool
     {
         try {
-            return (bool) $this->client->upload($path, $resource, null,true);
+            return (bool) $this->client->upload($path, $resource, null, true);
         } catch (Exception $e) {
             throw new Exception('Unable to update stream to: ' . $path . ' ' . $e->getMessage());
         }
@@ -187,9 +181,10 @@ class ContentAdapter extends AbstractAdapter
     {
         try {
             $object = $this->client->readRaw($path);
-            if ( $object === false) {
+            if ($object === false) {
                 return false;
             }
+
             return $object;
         } catch (Exception $e) {
             throw new Exception('Unable to read file from: ' . $path . ' ' . $e->getMessage());
@@ -293,7 +288,8 @@ class ContentAdapter extends AbstractAdapter
     {
         try {
             $contents = $this->client->readRaw($path);
-            return (bool) $this->client->upload($newpath, $contents,'copy file', 'some id', true);
+
+            return (bool) $this->client->upload($newpath, $contents, 'copy file', 'some id', true);
         } catch (Exception $e) {
             throw new Exception('Unable to copy file from: ' . $path . ' to: ' . $newpath . ' ' . $e->getMessage());
         }
@@ -308,9 +304,10 @@ class ContentAdapter extends AbstractAdapter
         $path = $this->applyPathPrefix($path);
         try {
             $response = $this->getMetadata($path);
+
             return DateTime::createFromFormat("Y-m-d\TH:i:s.uO", $response->changed_on);
         } catch (Exception $e) {
-            throw new Exception('Unable get getTimestamp: ' . $path  . ' ' . $e->getMessage());
+            throw new Exception('Unable get getTimestamp: ' . $path . ' ' . $e->getMessage());
         }
     }
 
@@ -342,7 +339,8 @@ class ContentAdapter extends AbstractAdapter
         $path = $this->applyPathPrefix($path);
         try {
             $meta = $this->getMetadata($path);
-            return (int) $meta->{size-in-bytes};
+
+            return (int) $meta->{size - in - bytes};
         } catch (Exception $e) {
             throw new Exception('Unable to retrieve file size: ' . $path . ' ' . $e->getMessage());
         }
@@ -393,7 +391,7 @@ class ContentAdapter extends AbstractAdapter
      */
     public function setVisibility($path, $visibility): void
     {
-	    throw new Exception('Unable to set visibility  : ' . $path . ' ' . get_class($this) . ' Content API does not support visibility.');
+        throw new Exception('Unable to set visibility  : ' . $path . ' ' . get_class($this) . ' Content API does not support visibility.');
     }
 
     /**
@@ -438,7 +436,7 @@ class ContentAdapter extends AbstractAdapter
     {
         return $this->client;
     }
-    
+
     /**
      * @param  ContentClient  $client
      */
@@ -462,5 +460,4 @@ class ContentAdapter extends AbstractAdapter
             throw new Exception('getMetadata from: ' . $path . ' ' . $e->getMessage());
         }
     }
-
 }

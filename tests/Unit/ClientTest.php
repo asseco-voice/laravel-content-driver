@@ -5,7 +5,6 @@ namespace Asseco\ContentFileStorageDriver\Tests;
 use Asseco\ContentFileStorageDriver\ContentClient;
 use Exception;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Http;
 
 class ClientTest extends TestCase
 {

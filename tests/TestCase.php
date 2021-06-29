@@ -57,7 +57,7 @@ abstract class TestCase extends \Orchestra\Testbench\TestCase
                     'client_id'             => 'livepoc_web',
                     'grant_type'            => 'password',
                     'username'              => 'live',
-                    'password'              => 'live'
+                    'password'              => 'live',
                 ]
             )->object()->access_token;
     }

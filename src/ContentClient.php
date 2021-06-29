@@ -2,7 +2,6 @@
 
 namespace Asseco\ContentFileStorageDriver;
 
-use Asseco\Chassis\App\Facades\Iam;
 use Exception;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Client\Response;
@@ -92,10 +91,11 @@ class ContentClient
      * @return Response
      * @throws Exception
      */
-    public function listFolder(string $folder = '', bool $recursive = false, int $per_page = 10, int $page = 0, string $order = 'asc') : Response
+    public function listFolder(string $folder = '', bool $recursive = false, int $per_page = 10, int $page = 0, string $order = 'asc'): Response
     {
         $recursive = $recursive ? 'true' : 'false';
-        $url = $this->baseURL . $this->baseRestAPIUrl . $this->defaultRepository . '/' . $folder . '?kind=any' .  '&subfolders=' . $recursive . '&page-size=' . $per_page . '&page=' . $page . '&sort-order=' . $order;
+        $url = $this->baseURL . $this->baseRestAPIUrl . $this->defaultRepository . '/' . $folder . '?kind=any' . '&subfolders=' . $recursive . '&page-size=' . $per_page . '&page=' . $page . '&sort-order=' . $order;
+
         return $this->setClient('GET', $url);
     }
 
@@ -131,7 +131,7 @@ class ContentClient
             $folders = array_reverse(explode('/', $path));
             foreach ($folders as $folder) {
                 $fullPath .= '/' . $folder;
-                if (! $this->folderExist($fullPath, false)) {
+                if (!$this->folderExist($fullPath, false)) {
                     $this->createFolder($folder, dirname($fullPath));
                 }
             }
@@ -270,7 +270,7 @@ class ContentClient
     {
         $response = $this->getFile($path);
 
-        if (! $response) {
+        if (!$response) {
             return false;
         }
 
@@ -287,7 +287,7 @@ class ContentClient
     {
         $response = $this->getFile($path);
 
-        if (! $response) {
+        if (!$response) {
             return false;
         }
 
@@ -373,7 +373,7 @@ class ContentClient
      */
     private function responseHasNextPage(Response $response): bool
     {
-        if ($response->{total-pages} > 0 && $response->{page} <> $response->{total-pages}) {
+        if ($response->{total - pages} > 0 && $response->{page} != $response->{total - pages}) {
             return true;
         }
 
