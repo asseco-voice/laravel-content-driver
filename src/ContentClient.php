@@ -11,26 +11,37 @@ use Illuminate\Support\Facades\Log;
 
 class ContentClient
 {
-    private $token = '';
+    private string $token;
 
-    private $baseURL = '';
+    private string $baseURL;
 
-    private $baseRestAPIUrl = '/v1/content/';
+    private string $baseRestAPIUrl = '/v1/content/';
 
-    private $defaultRepository = 'dms';
+    private string $defaultRepository = 'dms';
 
-    public function __construct($baseURL = null, $baseRestAPIUrl = null, $defaultRepository = null)
+    /**
+     * ContentClient constructor.
+     * @param string $token
+     * @param string $baseURL
+     * @param string|null $baseRestAPIUrl
+     * @param string|null $defaultRepository
+     */
+    public function __construct(string $token, string $baseURL, string $baseRestAPIUrl = null, string $defaultRepository = null)
     {
+        $this->token = $token;
         $this->baseURL = $baseURL ?? $this->baseURL;
         $this->baseRestAPIUrl = $baseRestAPIUrl ?? $this->baseRestAPIUrl;
         $this->defaultRepository = $defaultRepository ?? $this->defaultRepository;
-        $this->token = Iam::getServiceToken();
     }
 
     /**
+     * @param string $method
+     * @param string $url
+     * @param array $payload
+     * @return Response
      * @throws Exception
      */
-    private function setClient($method = 'GET', $url, $payload = [])
+    private function setClient(string $method = 'GET', string $url, array $payload = []): Response
     {
         try {
             $response = Http::withToken($this->token)
@@ -42,7 +53,8 @@ class ContentClient
                     $url,
                     $payload
                 );
-            Log::info('response: ' . print_r($response, true));
+
+            Log::debug('response: ' . print_r($response, true));
 
             return $response;
         } catch (Exception | RequestException $e) {
@@ -52,34 +64,48 @@ class ContentClient
     }
 
     /**
+     * @return Response
      * @throws Exception
      */
-    public function getRepositories()
+    public function getRepositories(): Response
     {
         $url = $this->baseURL . $this->baseRestAPIUrl . 'repositories';
 
-        return $this->setClient('GET', $url)->object();
+        return $this->setClient('GET', $url);
     }
 
-    public function setDefaultRepositories($defaultRepository)
+    /**
+     * @param $defaultRepository
+     * @return string
+     */
+    public function setDefaultRepositories($defaultRepository): string
     {
         return $this->defaultRepository = $defaultRepository;
     }
 
     /**
+     * @param string $folder
+     * @param false $recursive
+     * @param int $per_page
+     * @param int $page
+     * @param string $order
+     * @return Response
      * @throws Exception
      */
-    public function listFolder($folder = '', $recursive = false, $per_page = 100, $page = 0)
+    public function listFolder(string $folder = '', bool $recursive = false, int $per_page = 10, int $page = 0, string $order = 'asc') : Response
     {
-        $url = $this->baseURL . $this->baseRestAPIUrl . $this->defaultRepository . '/' . $folder;
-
-        return $this->setClient('GET', $url)->object();
+        $recursive = $recursive ? 'true' : 'false';
+        $url = $this->baseURL . $this->baseRestAPIUrl . $this->defaultRepository . '/' . $folder . '?kind=any' .  '&subfolders=' . $recursive . '&page-size=' . $per_page . '&page=' . $page . '&sort-order=' . $order;
+        return $this->setClient('GET', $url);
     }
 
     /**
+     * @param string $name
+     * @param string $path
+     * @return Response
      * @throws Exception
      */
-    public function createFolder($name, $path = '/')
+    public function createFolder(string $name, string $path = '/'): Response
     {
         $url = $this->baseURL . $this->baseRestAPIUrl . $this->defaultRepository . '/folders/';
         $payload = [
@@ -89,20 +115,23 @@ class ContentClient
             'folder-purpose'    => 'generic-folder',
         ];
 
-        return $this->setClient('POST', $url, $payload)->object();
+        return $this->setClient('POST', $url, $payload);
     }
 
     /**
+     * @param string $path
+     * @param false $recursive
+     * @return bool
      * @throws Exception
      */
-    public function folderExist($path, $recursive = false): bool
+    public function folderExist(string $path, bool $recursive = false): bool
     {
         if ($recursive) {
             $fullPath = '';
             $folders = array_reverse(explode('/', $path));
             foreach ($folders as $folder) {
                 $fullPath .= '/' . $folder;
-                if (!$this->folderExist($fullPath, false)) {
+                if (! $this->folderExist($fullPath, false)) {
                     $this->createFolder($folder, dirname($fullPath));
                 }
             }
@@ -114,19 +143,23 @@ class ContentClient
     }
 
     /**
+     * @param string $path
+     * @return Response
      * @throws Exception
      */
-    public function getMetadata($path)
+    public function getMetadata(string $path): Response
     {
         $url = $this->baseURL . $this->baseRestAPIUrl . $this->defaultRepository . $path . '/metadata';
 
-        return $this->setClient('GET', $url)->object();
+        return $this->setClient('GET', $url);
     }
 
     /**
+     * @param string $filename
+     * @return Response
      * @throws Exception
      */
-    public function getFile($filename = '/')
+    public function getFile(string $filename = '/'): Response
     {
         $url = $this->baseURL . $this->baseRestAPIUrl . $this->defaultRepository . '/documents/' . $filename;
 
@@ -134,45 +167,58 @@ class ContentClient
     }
 
     /**
+     * @param string $folder
+     * @param bool $deleteContentWithSubFolders
+     * @return Response
      * @throws Exception
      */
-    public function deleteFolders($folder, $deleteContentWithSubFolders = true)
+    public function deleteFolders(string $folder, bool $deleteContentWithSubFolders = true): Response
     {
         $deleteContentWithSubFolders = $deleteContentWithSubFolders ? 'true' : 'false';
-        $folderId = $this->getMetadata($folder);
+        $folderId = $this->getMetadata($folder)->object();
         $url = $this->baseURL . $this->baseRestAPIUrl . $this->defaultRepository . '/folders/' . $folderId->id . '?delete-content-and-subfolders=' . $deleteContentWithSubFolders;
 
-        return $this->setClient('DELETE', $url)->object();
+        return $this->setClient('DELETE', $url);
     }
 
     /**
+     * @param string $path
+     * @return Response
      * @throws Exception
      */
-    public function deleteFile($path)
+    public function deleteFile(string $path): Response
     {
-        $filenameId = $this->getMetadata($path);
+        $filenameId = $this->getMetadata($path)->object();
         $url = $this->baseURL . $this->baseRestAPIUrl . $this->defaultRepository . '/documents/' . $filenameId->id;
 
-        return $this->setClient('DELETE', $url)->object();
+        return $this->setClient('DELETE', $url);
     }
 
     /**
+     * @param string $search
+     * @return Response
      * @throws Exception
      */
-    public function searchFolders($search)
+    public function searchFolders(string $search): Response
     {
         $url = $this->baseURL . $this->baseRestAPIUrl . $this->defaultRepository . '/search?q=' . $search;
 
-        return $this->setClient('GET', $url)->object();
+        return $this->setClient('GET', $url);
     }
 
     /**
+     * @param string $path
+     * @param $content
+     * @param string|null $purpose
+     * @param string|null $caseNumber
+     * @param bool $overwriteIfExists
+     * @return Response
      * @throws Exception
      */
-    public function uploadFile($path, $content, $purpose = null, $caseNumber = null, $overwriteIfExists = true)
+    public function uploadFile(string $path, $content, string $purpose = null, string $caseNumber = null, bool $overwriteIfExists = true): Response
     {
         $this->folderExist($path, true);
-        $folder = $this->getMetadata(dirname($path));
+        $folder = $this->getMetadata(dirname($path))->object();
         $url = $this->baseURL . $this->baseRestAPIUrl . $this->defaultRepository . '/folders/' . $folder->id;
 
         $payload = [
@@ -184,47 +230,34 @@ class ContentClient
             'overwrite-if-exists'   => $overwriteIfExists ? 'true' : 'false',
         ];
 
-        $r = Http::withToken($this->token)
+        return Http::withToken($this->token)
             ->withHeaders([
                 'Allow' => 'application/json',
             ])
             ->attach('content-stream', $content->getContent(), $content->getClientOriginalName())
             ->post($url, $payload);
-
-        //dd($folder->id);
-        return $r;
     }
 
     /**
-     * @return array
+     * @param string $sourceFile
+     * @param string $destinationFolder
+     * @param string|null $destinationRepo
+     * @param bool $overwriteIfExists
+     * @return Response
      * @throws Exception
      */
-    public function moveFile($sourceFile, $destinationFolder, $destinationRepo = null, $overwriteIfExists = true)
+    public function moveFile(string $sourceFile, string $destinationFolder, string $destinationRepo = null, bool $overwriteIfExists = true): Response
     {
-        $sourceFile = $this->getMetadata($sourceFile);
-        $folder = $this->getMetadata($destinationFolder);
+        $sourceFile = $this->getMetadata($sourceFile)->object();
+        $destinationFolder = $this->getMetadata($destinationFolder)->object();
         $url = $this->baseURL . $this->baseRestAPIUrl . $this->defaultRepository . '/documents/' . $sourceFile->id . '/move';
         $payload = [
-            'destination-folder-id'     => $folder->id,
+            'destination-folder-id'     => $destinationFolder->id,
             'destination-repo'          => $destinationRepo ?? $this->defaultRepository,
             'overwrite'                 => $overwriteIfExists,
         ];
 
-        return $this->setClient('POST', $url, $payload)->object();
-    }
-
-    /**
-     * @param $path
-     *
-     * @return array
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     */
-    public function read($path)
-    {
-        //$path = urlencode($path);
-        $metadata = $this->getMetadata($path);
-
-        return $metadata;
+        return $this->setClient('POST', $url, $payload);
     }
 
     /**
@@ -235,9 +268,11 @@ class ContentClient
      */
     public function readStream($path)
     {
-        $path = urlencode($path);
-
         $response = $this->getFile($path);
+
+        if (! $response) {
+            return false;
+        }
 
         return $response->getBody()->detach();
     }
@@ -250,28 +285,28 @@ class ContentClient
      */
     public function readRaw($path)
     {
-        //$path = urlencode($path);
-
         $response = $this->getFile($path);
+
+        if (! $response) {
+            return false;
+        }
 
         return $response->getBody()->detach();
     }
 
     /**
-     * @param  string  $path
-     * @param    $contents
-     * @param  string  $message
-     * @param  bool  $override
+     * @param string $path
+     * @param $contents
+     * @param string $message
+     * @param string|null $caseId
+     * @param bool $override
      *
-     * @return array
+     * @return Response
      * @throws Exception
      */
-    public function upload(string $path, $contents, string $message, string $caseId = null, bool $override = false)
+    public function upload(string $path, $contents, string $message, string $caseId = null, bool $override = false): Response
     {
-        //$path = urlencode($path);
-        //return $this->responseContents(
         return $this->uploadFile($path, $contents, $message, $caseId, $override);
-        //);
     }
 
     /**
@@ -280,10 +315,10 @@ class ContentClient
      * @param  string  $message
      * @param  bool  $override
      *
-     * @return array
+     * @return Response
      * @throws Exception
      */
-    public function uploadStream(string $path, $resource, string $message, bool $override = false): array
+    public function uploadStream(string $path, $resource, string $message, bool $override = false): Response
     {
         if (!is_resource($resource)) {
             throw new Exception(sprintf('Argument must be a valid resource type. %s given.', gettype($resource)));
@@ -293,36 +328,28 @@ class ContentClient
     }
 
     /**
-     * @param  string  $path
-     * @param  string  $commitMessage
-     *
+     * @param string $path
+     * @return Response
      * @throws Exception
      */
-    public function delete(string $path)
+    public function delete(string $path): Response
     {
-        //$path = urlencode($path);
-
         return $this->deleteFile($path);
     }
 
     /**
-     * @param  string|null  $directory
+     * @param  string  $directory
      * @param  bool  $recursive
      *
      * @return iterable
      * @throws Exception
      */
-    public function tree(string $directory = null, bool $recursive = false): iterable
+    public function tree(string $directory = '/', bool $recursive = false): iterable
     {
-        if ($directory === '/' || $directory === '') {
-            $directory = null;
-        }
-
         $page = 1;
-
         do {
-            $response = $this->listFolder($directory, $recursive, 100, $page++);
-            yield $this->responseContents($response);
+            $response = $this->listFolder($directory, $recursive, 10, ++$page);
+            yield $response;
         } while ($this->responseHasNextPage($response));
     }
 
@@ -330,12 +357,11 @@ class ContentClient
      * @param Response $response
      * @param bool $json
      *
-     * @return mixed
+     * @return Response
      */
-    private function responseContents(Response $response, $json = true): mixed
+    private function responseContents(Response $response, bool $json = true): Response
     {
-        $contents = $response->getBody()
-            ->getContents();
+        $contents = $response->getBody()->getContents();
 
         return ($json) ? json_decode($contents, true) : $contents;
     }
@@ -347,8 +373,8 @@ class ContentClient
      */
     private function responseHasNextPage(Response $response): bool
     {
-        if ($response->hasHeader('X-Next-Page')) {
-            return !empty($response->getHeader('X-Next-Page')[0] ?? '');
+        if ($response->{total-pages} > 0 && $response->{page} <> $response->{total-pages}) {
+            return true;
         }
 
         return false;

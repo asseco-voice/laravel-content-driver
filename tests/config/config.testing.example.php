@@ -19,7 +19,7 @@ return [
     /**
      * Base URL of Content server you want to use.
      */
-    'baseURL'               => 'http://10.135.11.98:7075',
+    'baseURL'               => null,
 
     /**
      * RestAPI that should be used.
