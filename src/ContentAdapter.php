@@ -3,7 +3,6 @@
 namespace Asseco\ContentFileStorageDriver;
 
 use DateTime;
-//use GuzzleHttpException\ClientException;
 use Exception;
 use League\Flysystem\Adapter\AbstractAdapter;
 use League\Flysystem\Config;
@@ -46,7 +45,7 @@ class ContentAdapter extends AbstractAdapter
     public function fileExists(string $path): bool
     {
         try {
-            $this->getMetadata($path);
+            $this->client->getDocumentMetadata($path);
         } catch (Exception $e) {
             if ($e instanceof Exception && $e->getCode() == 404) {
                 return false;
@@ -70,7 +69,7 @@ class ContentAdapter extends AbstractAdapter
         try {
             $override = $this->fileExists($path);
 
-            return (bool) $this->client->upload($path, $contents, $override);
+            return $this->client->upload($path, $contents, $override);
         } catch (Exception $e) {
             throw new Exception('Unable to write file to: ' . $path . ' ' . $e->getMessage());
         }
@@ -89,7 +88,7 @@ class ContentAdapter extends AbstractAdapter
         try {
             $override = $this->fileExists($path);
 
-            return (bool) $this->client->uploadStream($path, $resource, $override);
+            return $this->client->uploadStream($path, $resource, $override);
         } catch (Exception $e) {
             throw new Exception('Unable to write file to: ' . $path . ' ' . $e->getMessage());
         }
@@ -108,7 +107,7 @@ class ContentAdapter extends AbstractAdapter
     public function update($path, $contents, Config $config): bool
     {
         try {
-            return (bool) $this->client->upload($path, $contents, null, true);
+            return $this->client->upload($path, $contents, null, true);
         } catch (Exception $e) {
             throw new Exception('Unable to update file to: ' . $path . ' ' . $e->getMessage());
         }
@@ -127,7 +126,7 @@ class ContentAdapter extends AbstractAdapter
     public function updateStream($path, $resource, Config $config): bool
     {
         try {
-            return (bool) $this->client->upload($path, $resource, null, true);
+            return $this->client->upload($path, $resource, null, true);
         } catch (Exception $e) {
             throw new Exception('Unable to update stream to: ' . $path . ' ' . $e->getMessage());
         }
@@ -136,7 +135,7 @@ class ContentAdapter extends AbstractAdapter
     /**
      * Update a file.
      *
-     * @param string $path
+     * @param $path
      * @param resource $resource
      * @param Config $config Config object
      *
@@ -146,7 +145,7 @@ class ContentAdapter extends AbstractAdapter
     public function put($path, $resource, Config $config): bool
     {
         try {
-            return (bool) $this->client->upload($path, $resource, null, true);
+            return $this->client->upload($path, $resource, null, true);
         } catch (Exception $e) {
             throw new Exception('Unable to update stream to: ' . $path . ' ' . $e->getMessage());
         }
@@ -155,7 +154,7 @@ class ContentAdapter extends AbstractAdapter
     /**
      * Update a file.
      *
-     * @param string $path
+     * @param $path
      * @param resource $resource
      * @param Config $config Config object
      *
@@ -165,7 +164,7 @@ class ContentAdapter extends AbstractAdapter
     public function putStream($path, $resource, Config $config): bool
     {
         try {
-            return (bool) $this->client->upload($path, $resource, null, true);
+            return $this->client->upload($path, $resource, null, true);
         } catch (Exception $e) {
             throw new Exception('Unable to update stream to: ' . $path . ' ' . $e->getMessage());
         }
@@ -227,7 +226,7 @@ class ContentAdapter extends AbstractAdapter
     public function delete($path): bool
     {
         try {
-            return (bool) $this->client->delete($path);
+            return $this->client->delete($path);
         } catch (Exception $e) {
             throw new Exception('Unable to delete file at: ' . $path . ' ' . $e->getMessage());
         }
@@ -269,7 +268,7 @@ class ContentAdapter extends AbstractAdapter
     public function rename($path, $newpath): bool
     {
         try {
-            return (bool) $this->client->moveFile($path, $newpath);
+            return $this->client->moveFile($path, $newpath);
         } catch (Exception $e) {
             throw new Exception('Unable to delete file at: ' . $path . ' ' . $e->getMessage());
         }
@@ -289,7 +288,7 @@ class ContentAdapter extends AbstractAdapter
         try {
             $contents = $this->client->readRaw($path);
 
-            return (bool) $this->client->upload($newpath, $contents, 'copy file', 'some id', true);
+            return $this->client->upload($newpath, $contents, 'copy file', 'some id', true);
         } catch (Exception $e) {
             throw new Exception('Unable to copy file from: ' . $path . ' to: ' . $newpath . ' ' . $e->getMessage());
         }
@@ -303,7 +302,7 @@ class ContentAdapter extends AbstractAdapter
     {
         $path = $this->applyPathPrefix($path);
         try {
-            $response = $this->getMetadata($path);
+            $response = $this->client->getDocumentMetadata($path);
 
             return DateTime::createFromFormat("Y-m-d\TH:i:s.uO", $response->changed_on);
         } catch (Exception $e) {
@@ -338,9 +337,9 @@ class ContentAdapter extends AbstractAdapter
     {
         $path = $this->applyPathPrefix($path);
         try {
-            $meta = $this->getMetadata($path);
+            $meta = $this->client->getDocumentMetadata($path);
 
-            return (int) $meta->{size - in - bytes};
+            return $meta->sizeInBytes;
         } catch (Exception $e) {
             throw new Exception('Unable to retrieve file size: ' . $path . ' ' . $e->getMessage());
         }
@@ -360,7 +359,7 @@ class ContentAdapter extends AbstractAdapter
         $path = $this->applyPathPrefix($dirname);
 
         try {
-            return (bool) $this->client->createFolder($path);
+            return $this->client->createFolder($path);
         } catch (Exception $e) {
             throw new Exception('Unable to create new directory to: ' . $dirname . ' ' . $e->getMessage());
         }
@@ -377,7 +376,7 @@ class ContentAdapter extends AbstractAdapter
     public function deleteDir($dirname): bool
     {
         try {
-            return (bool) $this->client->deleteFolders($dirname, true);
+            return $this->client->deleteFolders($dirname, true);
         } catch (Exception $e) {
             throw new Exception('Unable to delete directory from: ' . $dirname . ' ' . $e->getMessage());
         }
@@ -455,7 +454,11 @@ class ContentAdapter extends AbstractAdapter
         $path = $this->applyPathPrefix($path);
 
         try {
-            return $this->client->getMetadata($path)->object();
+            if (substr($path, -1) === '/') {
+                return $this->client->getDirectoryMetadata($path);
+            } else {
+                return $this->client->getDocumentMetadata($path);
+            }
         } catch (Exception $e) {
             throw new Exception('getMetadata from: ' . $path . ' ' . $e->getMessage());
         }

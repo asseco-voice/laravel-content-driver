@@ -3,6 +3,8 @@
 namespace Asseco\ContentFileStorageDriver\Tests;
 
 use Asseco\ContentFileStorageDriver\ContentClient;
+use Asseco\ContentFileStorageDriver\Responses\Directory;
+use Asseco\ContentFileStorageDriver\Responses\Document;
 use Exception;
 use Illuminate\Http\UploadedFile;
 
@@ -54,7 +56,7 @@ class ClientTest extends TestCase
             $this->client->deleteFolders('/unittest1', true);
         }
         $this->client->createFolder('unittest1', '/');
-        $metadata = $this->client->getMetadata('/')->object();
+        $metadata = $this->client->getDirectoryMetadata('/')->get();
         $this->assertObjectHasAttribute('id', $metadata);
         // $this->assertObjectHasAttribute('created-by', $metadata);
         // $this->assertObjectHasAttribute('changed-on', $metadata);
@@ -79,15 +81,18 @@ class ClientTest extends TestCase
      */
     public function it_can_read_new_file()
     {
-        $metadata = $this->client->getMetadata('/unittest1/testing_' . $this->testCaseId . '.txt')->object();
-        if ($metadata) {
+        $this->withoutExceptionHandling();
+        $metadata = $this->client->getDocumentMetadata('/unittest1/testing_' . $this->testCaseId . '.txt')->get();
+
+        if (! empty($metadata->name)) {
             $data = $this->client->getFile('/unittest1/testing_' . $this->testCaseId . '.txt')->getBody()->getContents();
             $this->assertStringStartsWith('File for testing file streams', $data);
 
             $data = stream_get_contents($this->client->readRaw('/unittest1/testing_' . $this->testCaseId . '.txt'));
             $this->assertStringStartsWith('File for testing file streams', $data);
         }
-        $this->assertEmpty($metadata);
+
+        $this->assertEmpty($metadata->name);
     }
 
     /**
@@ -96,6 +101,6 @@ class ClientTest extends TestCase
     public function it_can_delete_a_file()
     {
         $this->withoutExceptionHandling();
-        //$this->client->delete('/unittest1/testing_' . $this->testCaseId . '.txt');
+        $this->client->delete('/unittest1/testing_' . $this->testCaseId . '.txt');
     }
 }

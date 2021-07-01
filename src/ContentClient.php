@@ -2,6 +2,9 @@
 
 namespace Asseco\ContentFileStorageDriver;
 
+use Asseco\ContentFileStorageDriver\Responses\Document;
+use Asseco\ContentFileStorageDriver\Responses\Directory;
+use Asseco\ContentFileStorageDriver\Responses\RepositoryList;
 use Exception;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Client\Response;
@@ -63,14 +66,14 @@ class ContentClient
     }
 
     /**
-     * @return Response
+     * @return RepositoryList
      * @throws Exception
      */
-    public function getRepositories(): Response
+    public function getRepositories(): RepositoryList
     {
         $url = $this->baseURL . $this->baseRestAPIUrl . 'repositories';
 
-        return $this->setClient('GET', $url);
+        return new RepositoryList($this->setClient('GET', $url)->json());
     }
 
     /**
@@ -91,7 +94,7 @@ class ContentClient
      * @return Response
      * @throws Exception
      */
-    public function listFolder(string $folder = '', bool $recursive = false, int $per_page = 10, int $page = 0, string $order = 'asc'): Response
+    public function listDirectory(string $folder = '', bool $recursive = false, int $per_page = 10, int $page = 0, string $order = 'asc'): Response
     {
         $recursive = $recursive ? 'true' : 'false';
         $url = $this->baseURL . $this->baseRestAPIUrl . $this->defaultRepository . '/' . $folder . '?kind=any' . '&subfolders=' . $recursive . '&page-size=' . $per_page . '&page=' . $page . '&sort-order=' . $order;
@@ -102,10 +105,10 @@ class ContentClient
     /**
      * @param string $name
      * @param string $path
-     * @return Response
+     * @return Directory
      * @throws Exception
      */
-    public function createFolder(string $name, string $path = '/'): Response
+    public function createFolder(string $name, string $path = '/'): Directory
     {
         $url = $this->baseURL . $this->baseRestAPIUrl . $this->defaultRepository . '/folders/';
         $payload = [
@@ -115,7 +118,7 @@ class ContentClient
             'folder-purpose'    => 'generic-folder',
         ];
 
-        return $this->setClient('POST', $url, $payload);
+        return new Directory($this->setClient('POST', $url, $payload)->json());
     }
 
     /**
@@ -144,14 +147,26 @@ class ContentClient
 
     /**
      * @param string $path
-     * @return Response
+     * @return Document
      * @throws Exception
      */
-    public function getMetadata(string $path): Response
+    public function getDocumentMetadata(string $path): Document
     {
         $url = $this->baseURL . $this->baseRestAPIUrl . $this->defaultRepository . $path . '/metadata';
 
-        return $this->setClient('GET', $url);
+        return new Document($this->setClient('GET', $url)->json());
+    }
+
+    /**
+     * @param string $path
+     * @return Directory
+     * @throws Exception
+     */
+    public function getDirectoryMetadata(string $path): Directory
+    {
+        $url = $this->baseURL . $this->baseRestAPIUrl . $this->defaultRepository . $path . '/metadata';
+
+        return new Directory($this->setClient('GET', $url)->json());
     }
 
     /**
@@ -175,7 +190,7 @@ class ContentClient
     public function deleteFolders(string $folder, bool $deleteContentWithSubFolders = true): Response
     {
         $deleteContentWithSubFolders = $deleteContentWithSubFolders ? 'true' : 'false';
-        $folderId = $this->getMetadata($folder)->object();
+        $folderId = $this->getDirectoryMetadata($folder);
         $url = $this->baseURL . $this->baseRestAPIUrl . $this->defaultRepository . '/folders/' . $folderId->id . '?delete-content-and-subfolders=' . $deleteContentWithSubFolders;
 
         return $this->setClient('DELETE', $url);
@@ -188,7 +203,7 @@ class ContentClient
      */
     public function deleteFile(string $path): Response
     {
-        $filenameId = $this->getMetadata($path)->object();
+        $filenameId = $this->getDocumentMetadata($path);
         $url = $this->baseURL . $this->baseRestAPIUrl . $this->defaultRepository . '/documents/' . $filenameId->id;
 
         return $this->setClient('DELETE', $url);
@@ -218,7 +233,7 @@ class ContentClient
     public function uploadFile(string $path, $content, string $purpose = null, string $caseNumber = null, bool $overwriteIfExists = true): Response
     {
         $this->folderExist($path, true);
-        $folder = $this->getMetadata(dirname($path))->object();
+        $folder = $this->getDirectoryMetadata(dirname($path))->get();
         $url = $this->baseURL . $this->baseRestAPIUrl . $this->defaultRepository . '/folders/' . $folder->id;
 
         $payload = [
@@ -248,8 +263,8 @@ class ContentClient
      */
     public function moveFile(string $sourceFile, string $destinationFolder, string $destinationRepo = null, bool $overwriteIfExists = true): Response
     {
-        $sourceFile = $this->getMetadata($sourceFile)->object();
-        $destinationFolder = $this->getMetadata($destinationFolder)->object();
+        $sourceFile = $this->getDocumentMetadata($sourceFile);
+        $destinationFolder = $this->getDirectoryMetadata($destinationFolder);
         $url = $this->baseURL . $this->baseRestAPIUrl . $this->defaultRepository . '/documents/' . $sourceFile->id . '/move';
         $payload = [
             'destination-folder-id'     => $destinationFolder->id,
@@ -348,7 +363,7 @@ class ContentClient
     {
         $page = 1;
         do {
-            $response = $this->listFolder($directory, $recursive, 10, ++$page);
+            $response = $this->listDirectory($directory, $recursive, 10, ++$page);
             yield $response;
         } while ($this->responseHasNextPage($response));
     }
@@ -367,13 +382,13 @@ class ContentClient
     }
 
     /**
-     * @param Response $response
+     * @param ContentItemList $response
      *
      * @return bool
      */
-    private function responseHasNextPage(Response $response): bool
+    private function responseHasNextPage(ContentItemList $response): bool
     {
-        if ($response->{total - pages} > 0 && $response->{page} != $response->{total - pages}) {
+        if ($response->totalPages > 0 && $response->page != $response->totalPages) {
             return true;
         }
 

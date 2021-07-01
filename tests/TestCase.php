@@ -13,12 +13,12 @@ abstract class TestCase extends \Orchestra\Testbench\TestCase
     /**
      * @var array
      */
-    protected array $config;
+    public array $config;
 
     public function setUp(): void
     {
-        $this->config = require __DIR__ . '/config/config.testing.php';
         parent::setUp();
+        $this->config = require __DIR__ . '/config/config.testing.php';
     }
 
     /**
@@ -26,7 +26,7 @@ abstract class TestCase extends \Orchestra\Testbench\TestCase
      */
     protected function getClientInstance(): ContentClient
     {
-        $this->config['token'] = $this->getToken();
+        $this->config['token'] = $this->config['token'] ?? $this->getToken();
 
         return new ContentClient(
             $this->config['token'],
@@ -41,6 +41,7 @@ abstract class TestCase extends \Orchestra\Testbench\TestCase
      */
     protected function getAdapterInstance(): ContentAdapter
     {
+
         return new ContentAdapter($this->getClientInstance());
     }
 
