@@ -11,8 +11,4 @@ class DocumentList
         $this->documents = $documents;
     }
 
-    public function get(): DocumentList
-    {
-        return $this;
-    }
 }

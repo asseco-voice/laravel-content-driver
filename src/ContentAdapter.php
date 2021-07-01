@@ -2,6 +2,7 @@
 
 namespace Asseco\ContentFileStorageDriver;
 
+use Asseco\ContentFileStorageDriver\Responses\Document;
 use DateTime;
 use Exception;
 use League\Flysystem\Adapter\AbstractAdapter;
@@ -61,10 +62,10 @@ class ContentAdapter extends AbstractAdapter
      * @param string $contents
      * @param Config $config
      *
-     * @return bool
+     * @return Document
      * @throws Exception
      */
-    public function write($path, $contents, Config $config): bool
+    public function write($path, $contents, Config $config): Document
     {
         try {
             $override = $this->fileExists($path);
@@ -80,10 +81,10 @@ class ContentAdapter extends AbstractAdapter
      * @param resource $resource
      * @param Config $config
      *
-     * @return bool
+     * @return Document
      * @throws Exception
      */
-    public function writeStream($path, $resource, Config $config): bool
+    public function writeStream($path, $resource, Config $config): Document
     {
         try {
             $override = $this->fileExists($path);
@@ -101,10 +102,10 @@ class ContentAdapter extends AbstractAdapter
      * @param string $contents
      * @param Config $config Config object
      *
-     * @return bool
+     * @return Document
      * @throws Exception
      */
-    public function update($path, $contents, Config $config): bool
+    public function update($path, $contents, Config $config): Document
     {
         try {
             return $this->client->upload($path, $contents, null, true);
@@ -120,10 +121,10 @@ class ContentAdapter extends AbstractAdapter
      * @param resource $resource
      * @param Config $config Config object
      *
-     * @return bool
+     * @return Document
      * @throws Exception
      */
-    public function updateStream($path, $resource, Config $config): bool
+    public function updateStream($path, $resource, Config $config): Document
     {
         try {
             return $this->client->upload($path, $resource, null, true);
@@ -139,10 +140,10 @@ class ContentAdapter extends AbstractAdapter
      * @param resource $resource
      * @param Config $config Config object
      *
-     * @return bool
+     * @return Document
      * @throws Exception
      */
-    public function put($path, $resource, Config $config): bool
+    public function put($path, $resource, Config $config): Document
     {
         try {
             return $this->client->upload($path, $resource, null, true);
@@ -158,10 +159,10 @@ class ContentAdapter extends AbstractAdapter
      * @param resource $resource
      * @param Config $config Config object
      *
-     * @return bool
+     * @return Document
      * @throws Exception
      */
-    public function putStream($path, $resource, Config $config): bool
+    public function putStream($path, $resource, Config $config): Document
     {
         try {
             return $this->client->upload($path, $resource, null, true);

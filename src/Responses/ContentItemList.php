@@ -23,8 +23,4 @@ class ContentItemList
         $this->items = $data['items'] ?? [];
     }
 
-    public function get(): ContentItemList
-    {
-        return $this;
-    }
 }

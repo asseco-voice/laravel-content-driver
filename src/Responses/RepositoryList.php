@@ -13,8 +13,4 @@ class RepositoryList
         }
     }
 
-    public function get(): RepositoryList
-    {
-        return $this;
-    }
 }

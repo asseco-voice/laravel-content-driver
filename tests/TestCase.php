@@ -18,7 +18,6 @@ abstract class TestCase extends \Orchestra\Testbench\TestCase
     public function setUp(): void
     {
         parent::setUp();
-        $this->config = require __DIR__ . '/config/config.testing.php';
     }
 
     /**
@@ -30,9 +29,9 @@ abstract class TestCase extends \Orchestra\Testbench\TestCase
 
         return new ContentClient(
             $this->config['token'],
-            $this->config['baseURL'],
-            $this->config['baseRestAPIUrl'],
-            $this->config['defaultRepository']
+            env('FILESYSTEM_BASE_URL'),
+            env('FILESYSTEM_BASE_REST_API_URL'),
+            env('FILESYSTEM_DEFAULT_REPOSITORY'),
         );
     }
 

@@ -234,7 +234,7 @@ class ContentClient
     public function uploadFile(string $path, $content, string $purpose = null, string $caseNumber = null, bool $overwriteIfExists = true): array
     {
         $this->folderExist($path, true);
-        $folder = $this->getDirectoryMetadata(dirname($path))->get();
+        $folder = $this->getDirectoryMetadata(dirname($path));
         $url = $this->baseURL . $this->baseRestAPIUrl . $this->defaultRepository . '/folders/' . $folder->id;
 
         $payload = [
@@ -332,7 +332,7 @@ class ContentClient
             throw new Exception(sprintf('Argument must be a valid resource type. %s given.', gettype($resource)));
         }
 
-        return $this->upload($path, stream_get_contents($resource), $message, $override)->get();
+        return $this->upload($path, stream_get_contents($resource), $message, $override);
     }
 
     /**

@@ -24,5 +24,9 @@
         <server name="DB_CONNECTION" value="testing"/>
         <server name="QUEUE_CONNECTION" value="sync"/>
         <server name="SESSION_DRIVER" value="array"/>
+        <server name="FILESYSTEM_BASE_URL" value="http://10.135.11.98:7075"/>
+        <server name="FILESYSTEM_BASE_REST_API_URL" value="/v1/content/"/>
+        <server name="FILESYSTEM_DEFAULT_REPOSITORY" value="dms"/>
+
     </php>
 </phpunit>

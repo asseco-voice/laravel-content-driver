@@ -23,8 +23,4 @@ class ContentItem
         $this->kind = $data['kind'] ?? '';
     }
 
-    public function get(): ContentItem
-    {
-        return $this;
-    }
 }

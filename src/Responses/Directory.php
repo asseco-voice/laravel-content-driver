@@ -15,8 +15,4 @@ class Directory extends ContentItem
         $this->folderPurpose = $data['folder-purpose'] ?? '';
     }
 
-    public function get(): Directory
-    {
-        return $this;
-    }
 }

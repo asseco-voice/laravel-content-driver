@@ -54,7 +54,7 @@ class ClientTest extends TestCase
             $this->client->deleteFolders('/unittest1', true);
         }
         $this->client->createFolder('unittest1', '/');
-        $metadata = $this->client->getDirectoryMetadata('/')->get();
+        $metadata = $this->client->getDirectoryMetadata('/');
         $this->assertObjectHasAttribute('id', $metadata);
         // $this->assertObjectHasAttribute('created-by', $metadata);
         // $this->assertObjectHasAttribute('changed-on', $metadata);
@@ -80,7 +80,7 @@ class ClientTest extends TestCase
     public function it_can_read_new_file()
     {
         $this->withoutExceptionHandling();
-        $metadata = $this->client->getDocumentMetadata('/unittest1/testing_' . $this->testCaseId . '.txt')->get();
+        $metadata = $this->client->getDocumentMetadata('/unittest1/testing_' . $this->testCaseId . '.txt');
 
         if (!empty($metadata->name)) {
             $data = $this->client->getFile('/unittest1/testing_' . $this->testCaseId . '.txt')->getBody()->getContents();

@@ -20,8 +20,4 @@ class Document extends ContentItem
         $this->sizeInBytes = $data['size-in-bytes'] ?? 0;
     }
 
-    public function get(): Document
-    {
-        return $this;
-    }
 }

@@ -15,8 +15,4 @@ class Repository
         $this->repositoryName = $data['repository-name'] ?? '';
     }
 
-    public function get(): Repository
-    {
-        return $this;
-    }
 }
