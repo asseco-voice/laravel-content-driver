@@ -55,8 +55,8 @@ return [
         'content' => [
             'driver' => 'content-file-storage',
             'baseURL' => env('FILESYSTEM_BASE_URL'),
-            'baseRestAPIUrl' => env('FILESYSTEM_CONTENT_BASE_REST_API_URL'),
-            'defaultRepository' => env('FILESYSTEM_CONTENT_DEFAULT_REPOSITORY'),
+            'baseRestAPIUrl' => env('FILESYSTEM_BASE_REST_API_URL'),
+            'defaultRepository' => env('FILESYSTEM_DEFAULT_REPOSITORY'),
         ],
 
     ],
