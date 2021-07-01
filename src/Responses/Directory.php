@@ -13,7 +13,6 @@ class Directory extends ContentItem
         parent::__construct($data);
 
         $this->folderPurpose = $data['folder-purpose'] ?? '';
-
     }
 
     public function get(): Directory

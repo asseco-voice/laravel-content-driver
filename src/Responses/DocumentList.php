@@ -2,8 +2,8 @@
 
 namespace Asseco\ContentFileStorageDriver\Responses;
 
-class DocumentList {
-
+class DocumentList
+{
     public array $documents;
 
     public function __construct($documents)

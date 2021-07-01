@@ -6,9 +6,9 @@ namespace Asseco\ContentFileStorageDriver;
  * laravel Service Provider.
  */
 
-use Storage;
-use League\Flysystem\Filesystem;
 use Illuminate\Support\ServiceProvider as AbstractServiceProvider;
+use League\Flysystem\Filesystem;
+use Storage;
 
 class ContentServiceProvider extends AbstractServiceProvider
 {
@@ -28,7 +28,6 @@ class ContentServiceProvider extends AbstractServiceProvider
         #$this->publishes([__DIR__ . '/../config/filesystem.php' => config_path('filesystem')]);
 
         Storage::extend(self::DRIVER_NAME, function ($app, $config) {
-
             $token = Iam::getServiceToken();
             $client = new ContentClient($token, $config['baseURL'], $config['baseRestAPIUrl'], $config['defaultRepository']);
 
