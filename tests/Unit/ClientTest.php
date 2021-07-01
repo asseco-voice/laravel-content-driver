@@ -70,7 +70,7 @@ class ClientTest extends TestCase
     {
         $filepath = __DIR__ . '/assets/testing.txt';
         $upload = new UploadedFile($filepath, 'testing_' . $this->testCaseId . '.txt', 'plain/text');
-        $contents = $this->client->upload('/unittest1/' . $this->testCaseId, $upload, 'Created file', '1', true)->object();
+        $contents = $this->client->upload('/unittest1/' . $this->testCaseId, $upload, 'Created file', '1', true);
 
         $this->assertTrue('testing_' . $this->testCaseId . '.txt' === $contents->name);
     }

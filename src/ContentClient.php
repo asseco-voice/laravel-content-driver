@@ -227,10 +227,10 @@ class ContentClient
      * @param string|null $purpose
      * @param string|null $caseNumber
      * @param bool $overwriteIfExists
-     * @return Response
+     * @return array
      * @throws Exception
      */
-    public function uploadFile(string $path, $content, string $purpose = null, string $caseNumber = null, bool $overwriteIfExists = true): Response
+    public function uploadFile(string $path, $content, string $purpose = null, string $caseNumber = null, bool $overwriteIfExists = true): array
     {
         $this->folderExist($path, true);
         $folder = $this->getDirectoryMetadata(dirname($path))->get();
