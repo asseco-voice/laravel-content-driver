@@ -2,6 +2,7 @@
 
 namespace Asseco\ContentFileStorageDriver;
 
+use Asseco\ContentFileStorageDriver\Responses\ContentItemList;
 use Asseco\ContentFileStorageDriver\Responses\Directory;
 use Asseco\ContentFileStorageDriver\Responses\Document;
 use Asseco\ContentFileStorageDriver\Responses\RepositoryList;
@@ -24,11 +25,11 @@ class ContentClient
     /**
      * ContentClient constructor.
      * @param string $token
-     * @param string $baseURL
+     * @param string|null $baseURL
      * @param string|null $baseRestAPIUrl
      * @param string|null $defaultRepository
      */
-    public function __construct(string $token, string $baseURL, string $baseRestAPIUrl = null, string $defaultRepository = null)
+    public function __construct(string $token, string $baseURL = null, string $baseRestAPIUrl = null, string $defaultRepository = null)
     {
         $this->token = $token;
         $this->baseURL = $baseURL ?? $this->baseURL;
@@ -43,7 +44,7 @@ class ContentClient
      * @return Response
      * @throws Exception
      */
-    private function setClient(string $method = 'GET', string $url, array $payload = []): Response
+    private function setClient(string $method = 'GET', string $url = '', array $payload = []): Response
     {
         try {
             $response = Http::withToken($this->token)
@@ -285,10 +286,6 @@ class ContentClient
     {
         $response = $this->getFile($path);
 
-        if (!$response) {
-            return false;
-        }
-
         return $response->getBody()->detach();
     }
 
@@ -301,10 +298,6 @@ class ContentClient
     public function readRaw($path)
     {
         $response = $this->getFile($path);
-
-        if (!$response) {
-            return false;
-        }
 
         return $response->getBody()->detach();
     }
@@ -330,10 +323,10 @@ class ContentClient
      * @param  string  $message
      * @param  bool  $override
      *
-     * @return Response
+     * @return Document
      * @throws Exception
      */
-    public function uploadStream(string $path, $resource, string $message, bool $override = false): Response
+    public function uploadStream(string $path, $resource, string $message, bool $override = false): Document
     {
         if (!is_resource($resource)) {
             throw new Exception(sprintf('Argument must be a valid resource type. %s given.', gettype($resource)));
@@ -365,7 +358,7 @@ class ContentClient
         do {
             $response = $this->listDirectory($directory, $recursive, 10, ++$page);
             yield $response;
-        } while ($this->responseHasNextPage($response));
+        } while ($this->responseHasNextPage(new ContentItemList($response)));
     }
 
     /**

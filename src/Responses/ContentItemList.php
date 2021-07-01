@@ -12,12 +12,8 @@ class ContentItemList
     public string $sortBy;
     public ContentItem $items;
 
-    private bool $isValid = true;
-
     public function __construct($data)
     {
-        $this->validate($data);
-
         $this->totalCount = $data['total-count'] ?? 0;
         $this->pageSize = $data['$page-size'] ?? 0;
         $this->page = $data['page'] ?? 0;
@@ -27,15 +23,8 @@ class ContentItemList
         $this->items = $data['items'] ?? [];
     }
 
-    private function validate($data)
-    {
-        if (empty($data)) {
-            $this->isValid = false;
-        }
-    }
-
     public function get(): ContentItemList
     {
-        return $this->isValid ? $this : false;
+        return $this;
     }
 }

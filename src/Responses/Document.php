@@ -9,12 +9,9 @@ class Document extends ContentItem
     public string $filingCaseNumber;
     public int $sizeInBytes;
 
-    private bool $isValid = true;
-
     public function __construct($data)
     {
         parent::__construct($data);
-        $this->validate($data);
 
         $this->kind = $data['kind'] ?? '';
         $this->mediaType = $data['media-type'] ?? '';
@@ -25,6 +22,6 @@ class Document extends ContentItem
 
     public function get(): Document
     {
-        return $this->isValid ? $this : false;
+        return $this;
     }
 }

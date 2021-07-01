@@ -17,6 +17,6 @@ class Directory extends ContentItem
 
     public function get(): Directory
     {
-        return $this->isValid ? $this : false;
+        return $this;
     }
 }

@@ -12,12 +12,8 @@ class ContentItem
     public string $path;
     public string $kind;
 
-    private bool $isValid = true;
-
     public function __construct($data)
     {
-        $this->validate($data);
-
         $this->id = $data['id'] ?? '';
         $this->changedOn = $data['changed-on'] ?? '';
         $this->createdOn = $data['created-on'] ?? '';
@@ -27,15 +23,8 @@ class ContentItem
         $this->kind = $data['kind'] ?? '';
     }
 
-    public function validate($data)
-    {
-        if (empty($data['name'])) {
-            $this->isValid = false;
-        }
-    }
-
     public function get(): ContentItem
     {
-        return $this->isValid ? $this : false;
+        return $this;
     }
 }

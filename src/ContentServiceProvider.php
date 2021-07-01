@@ -8,7 +8,7 @@ namespace Asseco\ContentFileStorageDriver;
 
 use Illuminate\Support\ServiceProvider as AbstractServiceProvider;
 use League\Flysystem\Filesystem;
-use Storage;
+use Illuminate\Support\Facades\Storage;
 
 class ContentServiceProvider extends AbstractServiceProvider
 {
@@ -25,8 +25,6 @@ class ContentServiceProvider extends AbstractServiceProvider
      */
     public function boot()
     {
-        //$this->publishes([__DIR__ . '/../config/filesystem.php' => config_path('filesystem')]);
-
         Storage::extend(self::DRIVER_NAME, function ($app, $config) {
             $client = new ContentClient($config['token'], $config['baseURL'], $config['baseRestAPIUrl'], $config['defaultRepository']);
 
@@ -42,6 +40,6 @@ class ContentServiceProvider extends AbstractServiceProvider
     public function register()
     {
         // No services to register.
-        //$this->mergeConfigFrom(__DIR__ . '/../config/filesystem.php', 'filesystem');
+        $this->mergeConfigFrom(__DIR__ . '/../config/filesystem.php', 'filesystem.disks');
     }
 }

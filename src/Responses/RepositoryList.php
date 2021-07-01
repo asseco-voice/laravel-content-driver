@@ -4,7 +4,7 @@ namespace Asseco\ContentFileStorageDriver\Responses;
 
 class RepositoryList
 {
-    public array $repositories;
+    public array $repositories = [];
 
     public function __construct($data)
     {
