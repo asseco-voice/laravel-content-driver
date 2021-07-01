@@ -28,8 +28,7 @@ class ContentServiceProvider extends AbstractServiceProvider
         //$this->publishes([__DIR__ . '/../config/filesystem.php' => config_path('filesystem')]);
 
         Storage::extend(self::DRIVER_NAME, function ($app, $config) {
-            $token = Iam::getServiceToken();
-            $client = new ContentClient($token, $config['baseURL'], $config['baseRestAPIUrl'], $config['defaultRepository']);
+            $client = new ContentClient($config['token'], $config['baseURL'], $config['baseRestAPIUrl'], $config['defaultRepository']);
 
             return new Filesystem(
                 new ContentAdapter($client)
