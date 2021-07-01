@@ -38,7 +38,7 @@
           "Asseco\\ContentFileStorageDriver\\ContentServiceProvider"
         ]
       }
-    }
+    },
     "config": {
         "sort-packages": true
     }
