@@ -59,7 +59,6 @@ return [
             'defaultRepository' => env('FILESYSTEM_CONTENT_DEFAULT_REPOSITORY'),
         ],
 
-
     ],
 
     /*

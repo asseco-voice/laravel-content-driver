@@ -25,6 +25,8 @@ class ContentServiceProvider extends AbstractServiceProvider
      */
     public function boot()
     {
+        #$this->publishes([__DIR__ . '/../config/filesystem.php' => config_path('filesystem')]);
+
         Storage::extend(self::DRIVER_NAME, function ($app, $config) {
 
             $token = Iam::getServiceToken();
@@ -42,5 +44,6 @@ class ContentServiceProvider extends AbstractServiceProvider
     public function register()
     {
         // No services to register.
+        #$this->mergeConfigFrom(__DIR__ . '/../config/filesystem.php', 'filesystem');
     }
 }
