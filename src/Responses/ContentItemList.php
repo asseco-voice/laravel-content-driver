@@ -2,10 +2,8 @@
 
 namespace Asseco\ContentFileStorageDriver\Responses;
 
-use Asseco\ContentFileStorageDriver\Responses\ContentItem;
-
-class ContentItemList {
-
+class ContentItemList
+{
     public int $totalCount;
     public int $pageSize;
     public int $page;
@@ -20,20 +18,18 @@ class ContentItemList {
     {
         $this->validate($data);
 
-        $this->totalCount       = $data['total-count'] ?? 0;
-        $this->pageSize         = $data['$page-size'] ?? 0;
-        $this->page             = $data['page'] ?? 0;
-        $this->totalPages       = $data['total-pages'] ?? '';
-        $this->sortOrder        = $data['sort-order'] ?? 'asc';
-        $this->sortBy           = $data['sort-by'] ?? '';
-        $this->items            = $data['items'] ?? [];
-
+        $this->totalCount = $data['total-count'] ?? 0;
+        $this->pageSize = $data['$page-size'] ?? 0;
+        $this->page = $data['page'] ?? 0;
+        $this->totalPages = $data['total-pages'] ?? '';
+        $this->sortOrder = $data['sort-order'] ?? 'asc';
+        $this->sortBy = $data['sort-by'] ?? '';
+        $this->items = $data['items'] ?? [];
     }
 
     private function validate($data)
     {
-        if (empty($data))
-        {
+        if (empty($data)) {
             $this->isValid = false;
         }
     }

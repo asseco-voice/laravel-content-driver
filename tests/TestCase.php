@@ -41,7 +41,6 @@ abstract class TestCase extends \Orchestra\Testbench\TestCase
      */
     protected function getAdapterInstance(): ContentAdapter
     {
-
         return new ContentAdapter($this->getClientInstance());
     }
 

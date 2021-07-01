@@ -3,8 +3,6 @@
 namespace Asseco\ContentFileStorageDriver\Tests;
 
 use Asseco\ContentFileStorageDriver\ContentClient;
-use Asseco\ContentFileStorageDriver\Responses\Directory;
-use Asseco\ContentFileStorageDriver\Responses\Document;
 use Exception;
 use Illuminate\Http\UploadedFile;
 
@@ -84,7 +82,7 @@ class ClientTest extends TestCase
         $this->withoutExceptionHandling();
         $metadata = $this->client->getDocumentMetadata('/unittest1/testing_' . $this->testCaseId . '.txt')->get();
 
-        if (! empty($metadata->name)) {
+        if (!empty($metadata->name)) {
             $data = $this->client->getFile('/unittest1/testing_' . $this->testCaseId . '.txt')->getBody()->getContents();
             $this->assertStringStartsWith('File for testing file streams', $data);
 

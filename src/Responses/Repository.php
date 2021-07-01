@@ -2,8 +2,8 @@
 
 namespace Asseco\ContentFileStorageDriver\Responses;
 
-class Repository {
-
+class Repository
+{
     public string $repositoryId;
     public string $repositoryName;
 
@@ -15,13 +15,11 @@ class Repository {
 
         $this->repositoryId = $data['repository-id'] ?? '';
         $this->repositoryName = $data['repository-name'] ?? '';
-
     }
 
     private function validate($data)
     {
-        if (empty($data))
-        {
+        if (empty($data)) {
             $this->isValid = false;
         }
     }

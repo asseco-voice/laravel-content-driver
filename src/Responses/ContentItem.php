@@ -2,8 +2,8 @@
 
 namespace Asseco\ContentFileStorageDriver\Responses;
 
-class ContentItem {
-
+class ContentItem
+{
     public string $id;
     public string $changedOn;
     public string $createdOn;
@@ -29,8 +29,7 @@ class ContentItem {
 
     public function validate($data)
     {
-        if (empty($data['name']))
-        {
+        if (empty($data['name'])) {
             $this->isValid = false;
         }
     }

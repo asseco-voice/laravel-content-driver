@@ -2,8 +2,8 @@
 
 namespace Asseco\ContentFileStorageDriver;
 
-use Asseco\ContentFileStorageDriver\Responses\Document;
 use Asseco\ContentFileStorageDriver\Responses\Directory;
+use Asseco\ContentFileStorageDriver\Responses\Document;
 use Asseco\ContentFileStorageDriver\Responses\RepositoryList;
 use Exception;
 use Illuminate\Http\Client\RequestException;

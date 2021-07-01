@@ -8,10 +8,9 @@ class RepositoryList
 
     public function __construct($data)
     {
-        foreach($data as $item) {
+        foreach ($data as $item) {
             $this->repositories[] = new Repository($item);
         }
-
     }
 
     public function get(): RepositoryList
