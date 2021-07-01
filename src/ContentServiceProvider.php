@@ -6,9 +6,9 @@ namespace Asseco\ContentFileStorageDriver;
  * laravel Service Provider.
  */
 
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\ServiceProvider as AbstractServiceProvider;
 use League\Flysystem\Filesystem;
-use Illuminate\Support\Facades\Storage;
 
 class ContentServiceProvider extends AbstractServiceProvider
 {
