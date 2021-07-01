@@ -1,5 +1,5 @@
 {
-    "name": "asseco/flysystem-content-storage",
+    "name": "asseco-voice/laravel-content-driver",
     "description": "Flysystem Adapter for the Content microservice",
     "keywords": [
         "laravel",
@@ -14,7 +14,7 @@
         "php": "^7.4 || ^8.0",
         "laravel/framework": "^8.0",
         "ext-json": "*",
-        "guzzlehttp/guzzle": "^6.3",
+        "guzzlehttp/guzzle": "^7.0.1",
         "league/flysystem": "^1.0"
     },
     "require-dev": {
