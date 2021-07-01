@@ -12,5 +12,4 @@ class RepositoryList
             $this->repositories[] = new Repository($item);
         }
     }
-
 }

@@ -22,5 +22,4 @@ class ContentItemList
         $this->sortBy = $data['sort-by'] ?? '';
         $this->items = $data['items'] ?? [];
     }
-
 }

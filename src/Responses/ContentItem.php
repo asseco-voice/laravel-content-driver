@@ -22,5 +22,4 @@ class ContentItem
         $this->path = $data['path'] ?? '';
         $this->kind = $data['kind'] ?? '';
     }
-
 }

@@ -10,5 +10,4 @@ class DocumentList
     {
         $this->documents = $documents;
     }
-
 }
