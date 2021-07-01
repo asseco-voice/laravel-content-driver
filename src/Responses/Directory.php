@@ -11,7 +11,6 @@ class Directory extends ContentItem
     public function __construct($data)
     {
         parent::__construct($data);
-        $this->validate($data);
 
         $this->folderPurpose = $data['folder-purpose'] ?? '';
 

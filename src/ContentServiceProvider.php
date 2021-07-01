@@ -10,7 +10,7 @@ use Storage;
 use League\Flysystem\Filesystem;
 use Illuminate\Support\ServiceProvider as AbstractServiceProvider;
 
-class ServiceProvider extends AbstractServiceProvider
+class ContentServiceProvider extends AbstractServiceProvider
 {
     /**
      * @var string The name of the driver.

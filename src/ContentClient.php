@@ -250,7 +250,7 @@ class ContentClient
                 'Allow' => 'application/json',
             ])
             ->attach('content-stream', $content->getContent(), $content->getClientOriginalName())
-            ->post($url, $payload);
+            ->post($url, $payload)->json();
     }
 
     /**
@@ -316,12 +316,12 @@ class ContentClient
      * @param string|null $caseId
      * @param bool $override
      *
-     * @return Response
+     * @return Document
      * @throws Exception
      */
-    public function upload(string $path, $contents, string $message, string $caseId = null, bool $override = false): Response
+    public function upload(string $path, $contents, string $message, string $caseId = null, bool $override = false): Document
     {
-        return $this->uploadFile($path, $contents, $message, $caseId, $override);
+        return new Document($this->uploadFile($path, $contents, $message, $caseId, $override));
     }
 
     /**
@@ -339,7 +339,7 @@ class ContentClient
             throw new Exception(sprintf('Argument must be a valid resource type. %s given.', gettype($resource)));
         }
 
-        return $this->upload($path, stream_get_contents($resource), $message, $override);
+        return $this->upload($path, stream_get_contents($resource), $message, $override)->get();
     }
 
     /**
