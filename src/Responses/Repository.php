@@ -14,5 +14,4 @@ class Repository
         $this->repositoryId = $data['repository-id'] ?? '';
         $this->repositoryName = $data['repository-name'] ?? '';
     }
-
 }

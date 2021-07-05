@@ -14,5 +14,4 @@ class Directory extends ContentItem
 
         $this->folderPurpose = $data['folder-purpose'] ?? '';
     }
-
 }

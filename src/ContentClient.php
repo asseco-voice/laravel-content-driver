@@ -11,6 +11,9 @@ use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\File\File;
+use Illuminate\Support\Str;
 
 class ContentClient
 {
@@ -223,38 +226,6 @@ class ContentClient
     }
 
     /**
-     * @param string $path
-     * @param $content
-     * @param string|null $purpose
-     * @param string|null $caseNumber
-     * @param bool $overwriteIfExists
-     * @return array
-     * @throws Exception
-     */
-    public function uploadFile(string $path, $content, string $purpose = null, string $caseNumber = null, bool $overwriteIfExists = true): array
-    {
-        $this->folderExist($path, true);
-        $folder = $this->getDirectoryMetadata(dirname($path));
-        $url = $this->baseURL . $this->baseRestAPIUrl . $this->defaultRepository . '/folders/' . $folder->id;
-
-        $payload = [
-            'content-stream'        => $content,
-            'name'                  => $content->getClientOriginalName(),
-            'media-type'            => $content->getClientMimeType(),
-            'filing-purpose'        => $purpose ?? 'service',
-            'filing-case-number'    => $caseNumber ?? 'record id',
-            'overwrite-if-exists'   => $overwriteIfExists ? 'true' : 'false',
-        ];
-
-        return Http::withToken($this->token)
-            ->withHeaders([
-                'Allow' => 'application/json',
-            ])
-            ->attach('content-stream', $content->getContent(), $content->getClientOriginalName())
-            ->post($url, $payload)->json();
-    }
-
-    /**
      * @param string $sourceFile
      * @param string $destinationFolder
      * @param string|null $destinationRepo
@@ -302,37 +273,97 @@ class ContentClient
         return $response->getBody()->detach();
     }
 
+
     /**
      * @param string $path
-     * @param $contents
-     * @param string $message
-     * @param string|null $caseId
+     * @param $content
+     * @param string|null $purpose
+     * @param string|null $caseNumber
+     * @param bool $overwriteIfExists
+     * @return array
+     * @throws Exception
+     */
+    public function uploadFile(string $path, $content, string $purpose = null, string $caseNumber = null, bool $overwriteIfExists = true): array
+    {
+        // save it to temporary dir first.
+        $tmpFilePath = sys_get_temp_dir() . '/' . Str::uuid()->toString();
+        file_put_contents($tmpFilePath, $content);
+        $tmpFile = new File($tmpFilePath);
+
+        $filename = basename($path);
+        $mediaType = $tmpFile->getMimeType($tmpFile);
+        $path = (dirname($path) === '.') ?  '/' :  dirname($path) . '/';
+
+        $content = new UploadedFile(
+            $tmpFile->getPathname(),
+            $tmpFile->getFilename(),
+            $tmpFile->getMimeType(),
+            0,
+            true // Mark it as test, since the file isn't from real HTTP POST.
+        );
+        return $this->upload($path, $filename, $content, $mediaType, $overwriteIfExists);
+    }
+
+    /**
+     * @param string $path
+     * @param $filename
+     * @param $content
+     * @param $mediaType
      * @param bool $override
      *
      * @return Document
      * @throws Exception
      */
-    public function upload(string $path, $contents, string $message, string $caseId = null, bool $override = false): Document
+    public function upload(string $path, $filename, $content, $mediaType, bool $override): Document
     {
-        return new Document($this->uploadFile($path, $contents, $message, $caseId, $override));
+        $this->folderExist($path, true);
+        $folder = $this->getDirectoryMetadata(dirname($path));
+        $url = $this->baseURL . $this->baseRestAPIUrl . $this->defaultRepository . '/folders/' . $folder->id;
+
+        $payload = [
+            'content-stream'        => $content,
+            'name'                  => $filename,
+            'media-type'            => $mediaType,
+            'filing-purpose'        => $purpose ?? 'service',
+            'filing-case-number'    => $caseNumber ?? 'record id',
+            'overwrite-if-exists'   => $override ? 'true' : 'false',
+        ];
+
+        try {
+            $res = Http::withToken($this->token)
+                ->withHeaders([
+                    'Allow' => 'application/json',
+                ])
+                ->attach('content-stream', $content, $filename)
+                ->post($url, $payload);
+            return new Document($res->json());
+        } catch (Exception | RequestException $e) {
+            Log::error("Couldn't get response: " . print_r($e->getMessage(), true));
+            throw new Exception($e->getMessage());
+        }
     }
 
     /**
      * @param  string  $path
      * @param $resource
-     * @param  string  $message
+     * @param $message
+     * @param $caseNumber
      * @param  bool  $override
      *
      * @return Document
      * @throws Exception
      */
-    public function uploadStream(string $path, $resource, string $message, bool $override = false): Document
+    public function uploadStream(string $path, $resource, $message = null, $caseNumber = null, bool $override = false): Document
     {
-        if (!is_resource($resource)) {
-            throw new Exception(sprintf('Argument must be a valid resource type. %s given.', gettype($resource)));
-        }
+        #if (! $resource instanceof Illuminate\Http\UploadedFile ) {
+        #    throw new Exception(sprintf('Argument must be a valid resource type. %s given.', gettype($resource)));
+        #}
 
-        return $this->upload($path, stream_get_contents($resource), $message, $override);
+        $content = $resource->getContent();
+        $filename = $resource->getClientOriginalName();
+        $mediaType = $resource->getClientMimeType();
+
+        return $this->upload($path, $filename, $content, $mediaType, $override);
     }
 
     /**
@@ -367,7 +398,7 @@ class ContentClient
      *
      * @return Response
      */
-    private function responseContents(Response $response, bool $json = true): Response
+    public function responseContents(Response $response, bool $json = true): Response
     {
         $contents = $response->getBody()->getContents();
 
@@ -379,7 +410,7 @@ class ContentClient
      *
      * @return bool
      */
-    private function responseHasNextPage(ContentItemList $response): bool
+    public function responseHasNextPage(ContentItemList $response): bool
     {
         if ($response->totalPages > 0 && $response->page != $response->totalPages) {
             return true;

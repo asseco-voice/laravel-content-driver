@@ -15,12 +15,12 @@ class ContentAdapterTest extends TestCase
      * @var ContentAdapter
      */
     protected ContentAdapter $contentAdapter;
-
-    public function setUp(): void
-    {
-        $this->contentAdapter = $this->getAdapterInstance();
-    }
-
+//
+//    public function setUp(): void
+//    {
+//        $this->contentAdapter = $this->getAdapterInstance();
+//    }
+//
 //    /**
 //     * @test
 //     */

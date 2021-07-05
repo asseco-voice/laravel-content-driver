@@ -19,5 +19,4 @@ class Document extends ContentItem
         $this->filingCaseNumber = $data['filing-case-number'] ?? '';
         $this->sizeInBytes = $data['size-in-bytes'] ?? 0;
     }
-
 }
