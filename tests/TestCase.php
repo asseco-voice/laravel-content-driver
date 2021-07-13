@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Asseco\ContentFileStorageDriver\Tests;
 
+use Asseco\Chassis\App\Facades\Iam;
 use Asseco\ContentFileStorageDriver\ContentAdapter;
 use Asseco\ContentFileStorageDriver\ContentClient;
-use Asseco\Chassis\App\Facades\Iam;
 
 abstract class TestCase extends \Orchestra\Testbench\TestCase
 {

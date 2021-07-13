@@ -281,6 +281,7 @@ class ContentAdapter extends AbstractAdapter
     {
         try {
             $contents = $this->client->readRaw($path);
+
             return $this->client->upload($newpath, $contents, 'copy file', 'some id', true);
         } catch (Exception $e) {
             throw new Exception('Unable to copy file from: ' . $path . ' to: ' . $newpath . ' ' . $e->getMessage());
@@ -296,6 +297,7 @@ class ContentAdapter extends AbstractAdapter
         $path = $this->applyPathPrefix($path);
         try {
             $response = $this->client->getDocumentMetadata($path);
+
             return DateTime::createFromFormat("Y-m-d\TH:i:s.uO", $response->changed_on);
         } catch (Exception $e) {
             throw new Exception('Unable get getTimestamp: ' . $path . ' ' . $e->getMessage());

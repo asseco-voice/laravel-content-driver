@@ -11,11 +11,8 @@ use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use League\MimeTypeDetection\ExtensionMimeTypeDetector;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Symfony\Component\HttpFoundation\File\File;
 use Illuminate\Support\Str;
-use function PHPUnit\Framework\isInstanceOf;
+use League\MimeTypeDetection\ExtensionMimeTypeDetector;
 
 class ContentClient
 {
@@ -157,11 +154,11 @@ class ContentClient
             $fullPathOld = '/';
             $folders = explode('/', $path);
             foreach ($folders as $folder) {
-                $fullPath .= $folder ;
-                if (! $this->folderExist($fullPath, false)) {
+                $fullPath .= $folder;
+                if (!$this->folderExist($fullPath, false)) {
                     $this->createFolder($folder, $fullPathOld);
                 }
-                $fullPathOld .= $folder ;
+                $fullPathOld .= $folder;
             }
         }
         $url = $this->baseURL . $this->defaultRepository . $path . '/metadata';
@@ -221,7 +218,8 @@ class ContentClient
         // save it to temporary dir first.
         $tmpFilePath = sys_get_temp_dir() . '/' . Str::uuid()->toString();
         file_put_contents($tmpFilePath, $content);
-        return fopen($tmpFilePath, "rb");
+
+        return fopen($tmpFilePath, 'rb');
     }
 
     /**
@@ -333,7 +331,6 @@ class ContentClient
         return $this->upload($path, $filename, $contents, $mediaType, $purpose, $caseNumber, $overwriteIfExists);
     }
 
-
     /**
      * @param string $path
      * @param $contents
@@ -353,6 +350,7 @@ class ContentClient
 
         return $this->upload($path, $filename, $contents, $mediaType, $purpose, $caseNumber, $overwriteIfExists);
     }
+
     /**
      * @param string $path
      * @param $filename
@@ -388,6 +386,7 @@ class ContentClient
                 ])
                 ->attach('content-stream', $contents, $filename)
                 ->post($url, $payload);
+
             return new Document($res->json());
         } catch (Exception | RequestException $e) {
             Log::error("Couldn't get response: " . print_r($e->getMessage(), true));
@@ -422,6 +421,7 @@ class ContentClient
     public function delete(string $path): Response
     {
         $path = $this->normalizePath($path);
+
         return $this->deleteFile($path);
     }
 
