@@ -6,7 +6,7 @@ namespace Asseco\ContentFileStorageDriver\Tests;
 
 use Asseco\ContentFileStorageDriver\ContentAdapter;
 use Asseco\ContentFileStorageDriver\ContentClient;
-use Illuminate\Support\Facades\Http;
+use Asseco\Chassis\App\Facades\Iam;
 
 abstract class TestCase extends \Orchestra\Testbench\TestCase
 {
@@ -30,7 +30,7 @@ abstract class TestCase extends \Orchestra\Testbench\TestCase
         return new ContentClient(
             $this->config['token'],
             env('FILESYSTEM_BASE_URL'),
-            env('FILESYSTEM_BASE_REST_API_URL'),
+            env('FILESYSTEM_PATH_PREFIX'),
             env('FILESYSTEM_DEFAULT_REPOSITORY'),
         );
     }
@@ -45,19 +45,6 @@ abstract class TestCase extends \Orchestra\Testbench\TestCase
 
     protected function getToken(): string
     {
-        return Http::asForm()
-            ->withHeaders([
-                'Allow' => 'application/json',
-                'Content-Type' => 'application/x-www-form-urlencoded',
-            ])
-            ->POST(
-                'http://10.135.11.98:7072/auth/realms/evil/protocol/openid-connect/token',
-                [
-                    'client_id'             => 'livepoc_web',
-                    'grant_type'            => 'password',
-                    'username'              => 'live',
-                    'password'              => 'live',
-                ]
-            )->object()->access_token;
+        return Iam::getServiceToken();
     }
 }

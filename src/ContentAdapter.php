@@ -174,18 +174,12 @@ class ContentAdapter extends AbstractAdapter
     /**
      * @param string $path
      *
-     * @return string
      * @throws Exception
      */
-    public function read($path): string
+    public function read($path)
     {
         try {
-            $object = $this->client->readRaw($path);
-            if ($object === false) {
-                return false;
-            }
-
-            return $object;
+            return $this->client->readRaw($path);
         } catch (Exception $e) {
             throw new Exception('Unable to read file from: ' . $path . ' ' . $e->getMessage());
         }
@@ -236,10 +230,9 @@ class ContentAdapter extends AbstractAdapter
     /**
      * @param string $path
      *
-     * @return string
      * @throws Exception
      */
-    public function readAndDelete(string $path): string
+    public function readAndDelete(string $path)
     {
         $path = $this->applyPathPrefix($path);
         try {
@@ -288,7 +281,6 @@ class ContentAdapter extends AbstractAdapter
     {
         try {
             $contents = $this->client->readRaw($path);
-
             return $this->client->upload($newpath, $contents, 'copy file', 'some id', true);
         } catch (Exception $e) {
             throw new Exception('Unable to copy file from: ' . $path . ' to: ' . $newpath . ' ' . $e->getMessage());
@@ -304,7 +296,6 @@ class ContentAdapter extends AbstractAdapter
         $path = $this->applyPathPrefix($path);
         try {
             $response = $this->client->getDocumentMetadata($path);
-
             return DateTime::createFromFormat("Y-m-d\TH:i:s.uO", $response->changed_on);
         } catch (Exception $e) {
             throw new Exception('Unable get getTimestamp: ' . $path . ' ' . $e->getMessage());

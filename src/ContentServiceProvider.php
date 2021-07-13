@@ -9,6 +9,7 @@ namespace Asseco\ContentFileStorageDriver;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\ServiceProvider as AbstractServiceProvider;
 use League\Flysystem\Filesystem;
+use Asseco\Chassis\App\Facades\Iam;
 
 class ContentServiceProvider extends AbstractServiceProvider
 {
@@ -26,7 +27,8 @@ class ContentServiceProvider extends AbstractServiceProvider
     public function boot()
     {
         Storage::extend(self::DRIVER_NAME, function ($app, $config) {
-            $client = new ContentClient($config['token'], $config['baseURL'], $config['baseRestAPIUrl'], $config['defaultRepository']);
+            $config['token'] = $config['token'] ?? Iam::getServiceToken();
+            $client = new ContentClient($config['token'], $config['pathPrefix'], $config['baseURL'], $config['defaultRepository']);
 
             return new Filesystem(
                 new ContentAdapter($client)
