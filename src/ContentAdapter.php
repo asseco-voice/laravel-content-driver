@@ -2,23 +2,15 @@
 
 namespace Asseco\ContentFileStorageDriver;
 
-use Exception;
-#use GuzzleHttpException\ClientException;
-use GuzzleHttp\Exception\GuzzleException;
-use JetBrains\PhpStorm\ArrayShape;
-use League\Flysystem\Adapter\AbstractAdapter;
-use League\Flysystem\Adapter\Polyfill\NotSupportingVisibilityTrait;
-use League\Flysystem\Config;
-use League\Flysystem\Util\MimeType;
-use League\MimeTypeDetection\ExtensionMimeTypeDetector;
+use Asseco\ContentFileStorageDriver\Responses\Document;
 use DateTime;
-use League\Flysystem\FilesystemException;
-
+use Exception;
+use League\Flysystem\Adapter\AbstractAdapter;
+use League\Flysystem\Config;
+use League\MimeTypeDetection\ExtensionMimeTypeDetector;
 
 /**
- * Class ContentAdapter
- *
- * @package Content\Flysystem
+ * Class ContentAdapter.
  */
 class ContentAdapter extends AbstractAdapter
 {
@@ -26,12 +18,12 @@ class ContentAdapter extends AbstractAdapter
      * @var ContentClient
      */
     protected ContentClient $client;
-    
+
     /**
      * @var ExtensionMimeTypeDetector
      */
     protected ExtensionMimeTypeDetector $mimeTypeDetector;
-    
+
     /**
      * ContentAdapter constructor.
      *
@@ -40,7 +32,7 @@ class ContentAdapter extends AbstractAdapter
      */
     public function __construct(ContentClient $client, string $prefix = '')
     {
-        $this->setClient($client) ;
+        $this->setClient($client);
         $this->setPathPrefix($prefix);
         $this->mimeTypeDetector = new ExtensionMimeTypeDetector();
     }
@@ -54,12 +46,12 @@ class ContentAdapter extends AbstractAdapter
     public function fileExists(string $path): bool
     {
         try {
-            $this->client->read($path);
+            $this->client->getDocumentMetadata($path);
         } catch (Exception $e) {
             if ($e instanceof Exception && $e->getCode() == 404) {
                 return false;
             }
-	        throw new Exception('Unable to check file existence for: ' . $path);
+            throw new Exception('Unable to check file existence for: ' . $path);
         }
 
         return true;
@@ -70,14 +62,14 @@ class ContentAdapter extends AbstractAdapter
      * @param string $contents
      * @param Config $config
      *
-     * @return bool|array
-     * @throws Exception|GuzzleException
+     * @return Document
+     * @throws Exception
      */
-    public function write($path, $contents, Config $config): mixed
+    public function write($path, $contents, Config $config): Document
     {
         try {
             $override = $this->fileExists($path);
-            
+
             return $this->client->upload($path, $contents, $override);
         } catch (Exception $e) {
             throw new Exception('Unable to write file to: ' . $path . ' ' . $e->getMessage());
@@ -89,26 +81,102 @@ class ContentAdapter extends AbstractAdapter
      * @param resource $resource
      * @param Config $config
      *
-     * @throws Exception|GuzzleException
+     * @return Document
+     * @throws Exception
      */
-    public function writeStream($path, $resource, Config $config): void
+    public function writeStream($path, $resource, Config $config): Document
     {
         try {
             $override = $this->fileExists($path);
-            
-            $this->client->uploadStream($path, $resource, $override);
+
+            return $this->client->uploadStream($path, $resource, $override);
         } catch (Exception $e) {
             throw new Exception('Unable to write file to: ' . $path . ' ' . $e->getMessage());
         }
     }
 
     /**
-     * @param string $path
+     * Update a file.
      *
-     * @return string
+     * @param string $path
+     * @param string $contents
+     * @param Config $config Config object
+     *
+     * @return Document
      * @throws Exception
      */
-    public function read($path): string
+    public function update($path, $contents, Config $config): Document
+    {
+        try {
+            return $this->client->upload($path, $contents, null, true);
+        } catch (Exception $e) {
+            throw new Exception('Unable to update file to: ' . $path . ' ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Update a file using a stream.
+     *
+     * @param string $path
+     * @param resource $resource
+     * @param Config $config Config object
+     *
+     * @return Document
+     * @throws Exception
+     */
+    public function updateStream($path, $resource, Config $config): Document
+    {
+        try {
+            return $this->client->upload($path, $resource, null, true);
+        } catch (Exception $e) {
+            throw new Exception('Unable to update stream to: ' . $path . ' ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Update a file.
+     *
+     * @param $path
+     * @param resource $resource
+     * @param Config $config Config object
+     *
+     * @return Document
+     * @throws Exception
+     */
+    public function put($path, $resource, Config $config): Document
+    {
+        try {
+            return $this->client->upload($path, $resource, null, true);
+        } catch (Exception $e) {
+            throw new Exception('Unable to update stream to: ' . $path . ' ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Update a file.
+     *
+     * @param $path
+     * @param resource $resource
+     * @param Config $config Config object
+     *
+     * @return Document
+     * @throws Exception
+     */
+    public function putStream($path, $resource, Config $config): Document
+    {
+        try {
+            return $this->client->upload($path, $resource, null, true);
+        } catch (Exception $e) {
+            throw new Exception('Unable to update stream to: ' . $path . ' ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * @param string $path
+     *
+     * @throws Exception
+     */
+    public function read($path)
     {
         try {
             return $this->client->readRaw($path);
@@ -122,17 +190,27 @@ class ContentAdapter extends AbstractAdapter
      *
      * @throws Exception
      */
-    public function readStream($path): mixed
+    public function readStream($path)
     {
         try {
             if (null === ($resource = $this->client->readStream($path))) {
-                throw new Exception('Unable to read file from: ' . $path . 'Empty content');
+                throw new Exception('Unable to read file stream from: ' . $path . 'Empty content');
             }
 
             return $resource;
         } catch (Exception $e) {
             throw new Exception('Unable to read file from: ' . $path . ' ' . $e->getMessage());
         }
+    }
+
+    /**
+     * @param string $path
+     * @return bool
+     * @throws Exception
+     */
+    public function has($path): bool
+    {
+        return $this->fileExists($path);
     }
 
     /**
@@ -154,141 +232,39 @@ class ContentAdapter extends AbstractAdapter
      *
      * @throws Exception
      */
-    public function deleteDirectory(string $path): void
+    public function readAndDelete(string $path)
     {
-        $files = $this->listContents($path, false);
+        $path = $this->applyPathPrefix($path);
+        try {
+            $contents = $this->read($path);
 
-        foreach ($files as $file) {
-            if ($file->isFile()) {
-                try {
-                    $this->client->delete($file->path());
-                } catch (Exception $e) {
-                    throw new Exception('Unable to delete file at: ' . $path . ' ' . $e->getMessage());
-                }
+            if ($contents === false) {
+                return false;
             }
-        }
-    }
 
-    /**
-     * @param string $path
-     * @param Config $config
-     *
-     * @throws Exception|GuzzleException
-     */
-    public function createDirectory(string $path, Config $config): void
-    {
-        $path = rtrim($path, '/');
-    
-        try {
-            $this->write($path, '', $config);
+            $this->client->delete($path);
+
+            return $contents;
         } catch (Exception $e) {
-            throw new Exception('Unable to create directory to: ' . $path . ' ' . $e->getMessage());
+            throw new Exception('Unable to delete file at: ' . $path . ' ' . $e->getMessage());
         }
     }
 
     /**
-     * @param string $path
-     * @param mixed $visibility
+     * Rename a file.
      *
+     * @param string $path
+     * @param string $newpath
+     *
+     * @return bool
      * @throws Exception
      */
-    public function setVisibility($path, $visibility): void
-    {
-	    throw new Exception('UnableToSetVisibility : ' . $path . ' ' . get_class($this) . ' Content API does not support visibility.');
-    }
-
-    /**
-     * @param string $path
-     *
-     * @throws Exception
-     */
-    public function visibility(string $path)
-    {
-        throw new Exception('UnableToSetVisibility : ' . $path . ' ' . get_class($this) . ' Content API does not support visibility.');
-    }
-
-    /**
-     * @param string $path
-     *
-     * @return string
-     * @throws Exception
-     */
-    public function mimeType(string $path): string
-    {
-        $mimeType = $this->mimeTypeDetector->detectMimeTypeFromPath($path);
-    
-        if ($mimeType === null) {
-	        throw new Exception('Unable to retrieve Metadata mimeType: ' . $path);
-        }
-        
-        return $mimeType;
-    }
-
-    /**
-     * @param string $path
-     *
-     * @return bool|DateTime
-     * @throws Exception
-     */
-    public function lastModified(string $path): mixed
+    public function rename($path, $newpath): bool
     {
         try {
-            $response = $this->client->getMetadata($path);
-            return DateTime::createFromFormat("Y-m-d\TH:i:s.uO", $response[0]['create_date']);
+            return $this->client->moveFile($path, $newpath);
         } catch (Exception $e) {
-            throw new Exception('Unable to retrieve Metadata from: ' . $path . ' ' . $e->getMessage());
-        }
-    }
-
-    /**
-     * @param string $path
-     *
-     * @return mixed
-     * @throws Exception
-     * @throws GuzzleException
-     */
-    public function fileSize(string $path): mixed
-    {
-        try {
-            // TODO:
-            #$meta = $this->client->getMetadata($path);
-            #$meta = $this->client->read($path);
-            #return $meta['size'][0] ?? 0;
-            return 0;
-        } catch (Exception $e) {
-            throw new Exception('Unable to retrieve Metadata sileSize: ' . $path . ' ' . $e->getMessage());
-        }
-    }
-
-    /**
-     * @param string $directory
-     * @param bool $recursive
-     *
-     * @throws Exception
-     */
-    public function listContents($directory = '', $recursive = false)
-    {
-        try {
-            return $this->client->listFolder($directory, $recursive);
-        } catch (Exception $e) {
-            throw new Exception('Unable to retrieve from: ' . $directory . ' ' . $e->getMessage());
-        }
-    }
-
-    /**
-     * @param string $source
-     * @param string $destination
-     * @param Config|null $config
-     *
-     * @return array
-     * @throws Exception
-     */
-    public function move(string $source, string $destination, Config $config = null): array
-    {
-        try {
-            return $this->client->moveFile($source, $destination);
-        } catch (Exception $e) {
-            throw new Exception('Unable to move file from: ' . $source . ' to: ' . $destination . ' ' . $e->getMessage());
+            throw new Exception('Unable to delete file at: ' . $path . ' ' . $e->getMessage());
         }
     }
 
@@ -305,71 +281,82 @@ class ContentAdapter extends AbstractAdapter
     {
         try {
             $contents = $this->client->readRaw($path);
-            $this->client->upload($newpath, $contents,'copy file', 'some id', true);
-            return true;
+
+            return $this->client->upload($newpath, $contents, 'copy file', 'some id', true);
         } catch (Exception $e) {
             throw new Exception('Unable to copy file from: ' . $path . ' to: ' . $newpath . ' ' . $e->getMessage());
         }
     }
-    
+
     /**
-     * @return ContentClient
+     * @param string $path
+     * @throws Exception
      */
-    public function getClient(): ContentClient
+    public function getTimestamp($path)
     {
-        return $this->client;
-    }
-    
-    /**
-     * @param  ContentClient  $client
-     */
-    public function setClient(ContentClient $client)
-    {
-        $this->client = $client;
+        $path = $this->applyPathPrefix($path);
+        try {
+            $response = $this->client->getDocumentMetadata($path);
+
+            return DateTime::createFromFormat("Y-m-d\TH:i:s.uO", $response->changed_on);
+        } catch (Exception $e) {
+            throw new Exception('Unable get getTimestamp: ' . $path . ' ' . $e->getMessage());
+        }
     }
 
     /**
-     * Update a file.
-     *
      * @param string $path
-     * @param string $contents
-     * @param Config $config Config object
-     *
-     * @return array|false false on failure file meta data on success
+     * @return string
      * @throws Exception
      */
-    public function update($path, $contents, Config $config): bool|array
+    public function getMimetype($path): string
     {
-        return $this->client->upload($path, $contents, null,true);
+        $path = $this->applyPathPrefix($path);
+        $mimeType = $this->mimeTypeDetector->detectMimeTypeFromPath($path);
+
+        if ($mimeType === null) {
+            throw new Exception('Unable to retrieve Metadata mimeType: ' . $path);
+        }
+
+        return $mimeType;
     }
 
     /**
-     * Update a file using a stream.
-     *
      * @param string $path
-     * @param resource $resource
-     * @param Config $config Config object
      *
-     * @return array|false false on failure file meta data on success
+     * @return int
      * @throws Exception
      */
-    public function updateStream($path, $resource, Config $config): bool|array
+    public function getSize($path): int
     {
-        return $this->client->upload($path, $resource, null,true);
+        $path = $this->applyPathPrefix($path);
+        try {
+            $meta = $this->client->getDocumentMetadata($path);
+
+            return $meta->sizeInBytes;
+        } catch (Exception $e) {
+            throw new Exception('Unable to retrieve file size: ' . $path . ' ' . $e->getMessage());
+        }
     }
 
     /**
-     * Rename a file.
+     * Create a directory.
      *
-     * @param string $path
-     * @param string $newpath
+     * @param string $dirname directory name
+     * @param Config $config
      *
-     * @return bool|array
+     * @return bool
      * @throws Exception
      */
-    public function rename($path, $newpath): bool
+    public function createDir($dirname, Config $config): bool
     {
-        return $this->move($path, $newpath);
+        $path = $this->applyPathPrefix($dirname);
+
+        try {
+            return $this->client->createFolder($path);
+        } catch (Exception $e) {
+            throw new Exception('Unable to create new directory to: ' . $dirname . ' ' . $e->getMessage());
+        }
     }
 
     /**
@@ -382,79 +369,32 @@ class ContentAdapter extends AbstractAdapter
      */
     public function deleteDir($dirname): bool
     {
-        return $this->delete($dirname);
-    }
-
-    /**
-     * Create a directory.
-     *
-     * @param string $dirname directory name
-     * @param Config $config
-     *
-     * @return array|false
-     * @throws Exception
-     */
-    public function createDir($dirname, Config $config): bool
-    {
-        $path = $this->applyPathPrefix($dirname);
-
         try {
-            $object = $this->client->createFolder($path);
+            return $this->client->deleteFolders($dirname, true);
         } catch (Exception $e) {
-            throw new Exception('Unable to create new folder: ' . $dirname . ' ' . $e->getMessage());
+            throw new Exception('Unable to delete directory from: ' . $dirname . ' ' . $e->getMessage());
         }
-
-        return $object;
     }
 
     /**
-     * Set the visibility for a file.
+     * @param string $path
+     * @param mixed $visibility
      *
+     * @throws Exception
+     */
+    public function setVisibility($path, $visibility): void
+    {
+        throw new Exception('Unable to set visibility  : ' . $path . ' ' . get_class($this) . ' Content API does not support visibility.');
+    }
+
+    /**
      * @param string $path
      *
-     * @return array file meta data
      * @throws Exception
      */
-    public function getSize($path): array
+    public function visibility(string $path)
     {
-        return $this->getMetadata($path);
-    }
-
-    /**
-     * @param string $path
-     * @return array|bool
-     * @throws Exception
-     */
-    public function getTimestamp($path)
-    {
-        return $this->getMetadata($path);
-    }
-
-    /**
-     * @param string $path
-     * @return array
-     */
-    public function getMimetype($path): array
-    {
-        return ['mimetype' => MimeType::detectByFilename($path)];
-    }
-
-    /**
-     * @param string $path
-     * @return bool|array
-     * @throws Exception
-     */
-    public function getMetadata($path): array
-    {
-        $path = $this->applyPathPrefix($path);
-
-        try {
-            $object = $this->client->getMetadata($path);
-        } catch (Exception $e) {
-            throw new Exception('getMetadata from: ' . $path . ' ' . $e->getMessage());
-        }
-
-        return $object;
+        throw new Exception('Unable to set visibility  : ' . $path . ' ' . get_class($this) . ' Content API does not support visibility.');
     }
 
     /**
@@ -468,13 +408,53 @@ class ContentAdapter extends AbstractAdapter
     }
 
     /**
-     * @param string $path
-     * @return array|bool
+     * @param string $directory
+     * @param bool $recursive
+     *
      * @throws Exception
      */
-    public function has($path): bool
+    public function listContents($directory = '', $recursive = false)
     {
-        return $this->getMetadata($path);
+        try {
+            return $this->client->tree($directory, $recursive);
+        } catch (Exception $e) {
+            throw new Exception('Unable to retrieve from: ' . $directory . ' ' . $e->getMessage());
+        }
     }
 
+    /**
+     * @return ContentClient
+     */
+    public function getClient(): ContentClient
+    {
+        return $this->client;
+    }
+
+    /**
+     * @param  ContentClient  $client
+     */
+    public function setClient(ContentClient $client)
+    {
+        $this->client = $client;
+    }
+
+    /**
+     * @param string $path
+     * @return array
+     * @throws Exception
+     */
+    public function getMetadata($path): array
+    {
+        $path = $this->applyPathPrefix($path);
+
+        try {
+            if (substr($path, -1) === '/') {
+                return $this->client->getDirectoryMetadata($path);
+            } else {
+                return $this->client->getDocumentMetadata($path);
+            }
+        } catch (Exception $e) {
+            throw new Exception('getMetadata from: ' . $path . ' ' . $e->getMessage());
+        }
+    }
 }
