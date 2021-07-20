@@ -2,6 +2,7 @@
 
 namespace Asseco\ContentFileStorageDriver;
 
+use Asseco\ContentFileStorageDriver\Responses\Directory;
 use Asseco\ContentFileStorageDriver\Responses\Document;
 use DateTime;
 use Exception;
@@ -70,7 +71,7 @@ class ContentAdapter extends AbstractAdapter
         try {
             $override = $this->fileExists($path);
 
-            return $this->client->upload($path, $contents, $override);
+            return $this->client->uploadFile($path, $contents, $override);
         } catch (Exception $e) {
             throw new Exception('Unable to write file to: ' . $path . ' ' . $e->getMessage());
         }
@@ -146,7 +147,7 @@ class ContentAdapter extends AbstractAdapter
     public function put($path, $resource, Config $config): Document
     {
         try {
-            return $this->client->upload($path, $resource, null, true);
+            return $this->client->uploadFile($path, $resource);
         } catch (Exception $e) {
             throw new Exception('Unable to update stream to: ' . $path . ' ' . $e->getMessage());
         }
@@ -230,6 +231,7 @@ class ContentAdapter extends AbstractAdapter
     /**
      * @param string $path
      *
+     * @return array|false|string
      * @throws Exception
      */
     public function readAndDelete(string $path)
@@ -274,10 +276,10 @@ class ContentAdapter extends AbstractAdapter
      * @param string $path
      * @param string $newpath
      *
-     * @return bool
+     * @return Document
      * @throws Exception
      */
-    public function copy($path, $newpath): bool
+    public function copy($path, $newpath): Document
     {
         try {
             $contents = $this->client->readRaw($path);
@@ -298,7 +300,7 @@ class ContentAdapter extends AbstractAdapter
         try {
             $response = $this->client->getDocumentMetadata($path);
 
-            return DateTime::createFromFormat("Y-m-d\TH:i:s.uO", $response->changed_on);
+            return DateTime::createFromFormat("Y-m-d\TH:i:s.uO", $response->changedOn);
         } catch (Exception $e) {
             throw new Exception('Unable get getTimestamp: ' . $path . ' ' . $e->getMessage());
         }
@@ -345,10 +347,10 @@ class ContentAdapter extends AbstractAdapter
      * @param string $dirname directory name
      * @param Config $config
      *
-     * @return bool
+     * @return Directory
      * @throws Exception
      */
-    public function createDir($dirname, Config $config): bool
+    public function createDir($dirname, Config $config): Directory
     {
         $path = $this->applyPathPrefix($dirname);
 
@@ -363,14 +365,13 @@ class ContentAdapter extends AbstractAdapter
      * Delete a directory.
      *
      * @param string $dirname
-     *
      * @return bool
      * @throws Exception
      */
     public function deleteDir($dirname): bool
     {
         try {
-            return $this->client->deleteFolders($dirname, true);
+            return $this->client->deleteFolders($dirname);
         } catch (Exception $e) {
             throw new Exception('Unable to delete directory from: ' . $dirname . ' ' . $e->getMessage());
         }
@@ -440,10 +441,10 @@ class ContentAdapter extends AbstractAdapter
 
     /**
      * @param string $path
-     * @return array
+     * @return Directory|Document
      * @throws Exception
      */
-    public function getMetadata($path): array
+    public function getMetadata($path)
     {
         $path = $this->applyPathPrefix($path);
 
