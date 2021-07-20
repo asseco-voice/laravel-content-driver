@@ -27,15 +27,16 @@ class ContentClient
     /**
      * ContentClient constructor.
      * @param string $token
-     * @param string|null $baseURL
-     * @param string|null $defaultRepository
+     * @param string $pathPrefix
+     * @param string $baseURL
+     * @param string $defaultRepository
      */
-    public function __construct(string $token, string $pathPrefix = '', string $baseURL = null, string $defaultRepository = null)
+    public function __construct(string $token, string $pathPrefix = '', string $baseURL = '', string $defaultRepository = '')
     {
         $this->token = $token;
-        $this->baseURL = $baseURL ?? $this->baseURL;
-        $this->pathPrefix = $pathPrefix ?? $this->pathPrefix;
-        $this->defaultRepository = $defaultRepository ?? $this->defaultRepository;
+        $this->baseURL = $baseURL;
+        $this->pathPrefix = $pathPrefix;
+        $this->defaultRepository = $this->defaultRepository;
     }
 
     /**
@@ -48,7 +49,7 @@ class ContentClient
     private function setClient(string $method = 'GET', string $url = '', array $payload = []): Response
     {
         try {
-            $response = Http::withToken($this->token)
+            return Http::withToken($this->token)
                 ->withHeaders([
                     'Allow' => 'application/json',
                     'Content-Type' => 'application/json',
@@ -57,10 +58,6 @@ class ContentClient
                     $url,
                     $payload
                 );
-
-            // Log::trace('response: ', $response);
-
-            return $response;
         } catch (Exception | RequestException $e) {
             Log::error("Couldn't get response: " . print_r($e->getMessage(), true));
             throw new Exception($e->getMessage());
