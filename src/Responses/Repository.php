@@ -9,8 +9,6 @@ class Repository
 
     public function __construct($data)
     {
-        $this->validate($data);
-
         $this->repositoryId = $data['repository-id'] ?? '';
         $this->repositoryName = $data['repository-name'] ?? '';
     }

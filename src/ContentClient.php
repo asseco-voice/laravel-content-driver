@@ -223,10 +223,10 @@ class ContentClient
     /**
      * @param string $folder
      * @param bool $deleteContentWithSubFolders
-     * @return Response
+     * @return bool
      * @throws Exception
      */
-    public function deleteFolders(string $folder, bool $deleteContentWithSubFolders = true): Response
+    public function deleteFolders(string $folder, bool $deleteContentWithSubFolders = true): bool
     {
         $folder = $this->normalizePath($folder);
         $deleteContentWithSubFolders = $deleteContentWithSubFolders ? 'true' : 'false';
@@ -322,19 +322,16 @@ class ContentClient
      */
     public function uploadFile(string $path, $contents, string $purpose = null, string $caseNumber = null, bool $overwriteIfExists = false): Document
     {
-        $mimeTypeDetector = new ExtensionMimeTypeDetector();
-        $mediaType = $mimeTypeDetector->detectMimeTypeFromPath($path);
         $purpose = $purpose ?? trim($this->pathPrefix, '/');
         $caseNumber = $caseNumber ?? 'record id';
 
-        return $this->upload($path, basename($path), $contents, $mediaType, $purpose, $caseNumber, $overwriteIfExists);
+        return $this->upload($path, basename($path), $contents, $purpose, $caseNumber, $overwriteIfExists);
     }
 
     /**
      * @param string $path
      * @param $filename
      * @param $contents
-     * @param $mediaType
      * @param null $purpose
      * @param null $caseNumber
      * @param bool $override
@@ -342,8 +339,11 @@ class ContentClient
      * @return Document
      * @throws Exception
      */
-    public function upload(string $path, $filename, $contents, $mediaType, $purpose = null, $caseNumber = null, bool $override = false): Document
+    public function upload(string $path, $filename, $contents, $purpose = null, $caseNumber = null, bool $override = false): Document
     {
+        $mimeTypeDetector = new ExtensionMimeTypeDetector();
+        $mediaType = $mimeTypeDetector->detectMimeTypeFromPath($path);
+
         $path = $this->normalizePath($path);
         $this->folderExist($path);
         $folder = $this->getDirectoryMetadata(dirname($path));
@@ -374,22 +374,23 @@ class ContentClient
     }
 
     /**
-     * @param  string  $path
+     * @param string $path
      * @param $resource
-     * @param  string  $message
-     * @param  bool  $override
+     * @param null $purpose
+     * @param null $caseNumber
+     * @param bool $override
      *
      * @return Document
      * @throws Exception
      */
-    public function uploadStream(string $path, $resource, string $message, bool $override = false): Document
+    public function uploadStream(string $path, $resource, $purpose = null, $caseNumber = null, bool $override = false): Document
     {
         $path = $this->normalizePath($path);
         if (!is_resource($resource)) {
             throw new Exception(sprintf('Argument must be a valid resource type. %s given.', gettype($resource)));
         }
 
-        return $this->upload($path, stream_get_contents($resource), $message, $override);
+        return $this->upload($path, basename($path), stream_get_contents($resource), $purpose, $caseNumber, $override);
     }
 
     /**

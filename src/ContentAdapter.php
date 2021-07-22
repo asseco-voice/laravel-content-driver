@@ -139,12 +139,11 @@ class ContentAdapter extends AbstractAdapter
      *
      * @param $path
      * @param resource $resource
-     * @param Config $config Config object
      *
      * @return Document
      * @throws Exception
      */
-    public function put($path, $resource, Config $config): Document
+    public function put($path, $resource): Document
     {
         try {
             return $this->client->uploadFile($path, $resource);
@@ -158,15 +157,14 @@ class ContentAdapter extends AbstractAdapter
      *
      * @param $path
      * @param resource $resource
-     * @param Config $config Config object
      *
      * @return Document
      * @throws Exception
      */
-    public function putStream($path, $resource, Config $config): Document
+    public function putStream($path, $resource): Document
     {
         try {
-            return $this->client->upload($path, $resource, null, true);
+            return $this->client->uploadStream($path, $resource);
         } catch (Exception $e) {
             throw new Exception('Unable to update stream to: ' . $path . ' ' . $e->getMessage());
         }
