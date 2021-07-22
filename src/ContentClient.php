@@ -233,6 +233,7 @@ class ContentClient
         $folderId = $this->getDirectoryMetadata($folder);
         $url = $this->baseURL . $this->defaultRepository . '/folders/' . $folderId->id . '?delete-content-and-subfolders=' . $deleteContentWithSubFolders;
         $request = $this->setClient('DELETE', $url);
+
         return in_array($request->status(), [200]);
     }
 
@@ -281,6 +282,7 @@ class ContentClient
             'overwrite'                 => $overwriteIfExists,
         ];
         $request = $this->setClient('POST', $url, $payload);
+
         return in_array($request->status(), [200, 204]);
     }
 
@@ -395,13 +397,14 @@ class ContentClient
 
     /**
      * @param string $path
-     * @return Bool
+     * @return bool
      * @throws Exception
      */
-    public function delete(string $path): Bool
+    public function delete(string $path): bool
     {
         $path = $this->normalizePath($path);
         $response = $this->deleteFile($path);
+
         return in_array($response->status(), [200]);
     }
 
@@ -426,9 +429,9 @@ class ContentClient
      * @param Response $response
      * @param bool $json
      *
-     * @return String
+     * @return string
      */
-    public function responseContents(Response $response, bool $json = true): String
+    public function responseContents(Response $response, bool $json = true): string
     {
         $contents = $response->body();
 
