@@ -25,7 +25,7 @@ class ContentServiceProvider extends AbstractServiceProvider
     public function boot()
     {
         Storage::extend('content-file-storage', function ($app, $config) {
-            $client = new ContentClient($config['token'], $config['base_url'], $config['base_rest_api_url'], $config['default_repository']);
+            $client = new ContentClient(request()->bearerToken(), $config['base_url'], $config['base_rest_api_url'], $config['default_repository']);
 
             return new Filesystem(
                 new ContentAdapter($client)
