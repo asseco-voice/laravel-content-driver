@@ -361,8 +361,8 @@ class ContentClient
             return new Document($res->json());
         } catch (Exception $e) {
             Log::error("Couldn't get response for path '{$path}': " . print_r($e->getMessage(), true));
-            Log::error("Filename: " . print_r($filename, true));
-            Log::error("Contents: " . print_r($contents, true));
+            Log::error('Filename: ' . print_r($filename, true));
+            Log::error('Contents: ' . print_r($contents, true));
             throw new Exception($e->getMessage());
         }
     }
@@ -415,7 +415,6 @@ class ContentClient
 
         do {
             yield $this->listDirectory($directory, $recursive, 10, ++$page);
-
         } while ($this->responseHasNextPage(
             new ContentItemList(
                 $this->listDirectory($directory, $recursive, 10, ++$page)
