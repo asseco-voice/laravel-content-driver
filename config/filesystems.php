@@ -2,10 +2,10 @@
 
 return [
     'content' => [
-        'driver' => 'content-file-storage',
-        'token' => '',
-        'baseURL' => env('FILESYSTEM_BASE_URL'),
-        'baseRestAPIUrl' => env('FILESYSTEM_BASE_REST_API_URL'),
-        'defaultRepository' => env('FILESYSTEM_DEFAULT_REPOSITORY'),
+        'driver'             => 'content-file-storage',
+        'token'              => env('CONTENT_TOKEN'),
+        'base_url'           => env('CONTENT_BASE_URL'),
+        'base_rest_api_url'  => env('CONTENT_BASE_REST_API_URL'),
+        'default_repository' => env('CONTENT_DEFAULT_REPOSITORY'),
     ],
 ];
