@@ -7,63 +7,56 @@ use Asseco\ContentFileStorageDriver\Responses\Directory;
 use Asseco\ContentFileStorageDriver\Responses\Document;
 use Asseco\ContentFileStorageDriver\Responses\RepositoryList;
 use Exception;
-use Illuminate\Http\Client\RequestException;
+use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
+use League\MimeTypeDetection\ExtensionMimeTypeDetector;
 
 class ContentClient
 {
     private string $token;
-
-    private string $baseURL;
-
-    private string $baseRestAPIUrl = '/v1/content/';
-
-    private string $defaultRepository = 'dms';
+    private string $baseUrl;
+    private string $pathPrefix;
+    private string $defaultRepository;
+    private PendingRequest $client;
 
     /**
      * ContentClient constructor.
      * @param string $token
-     * @param string|null $baseURL
-     * @param string|null $baseRestAPIUrl
-     * @param string|null $defaultRepository
+     * @param string $pathPrefix
+     * @param string $baseUrl
+     * @param string $defaultRepository
      */
-    public function __construct(string $token, string $baseURL = null, string $baseRestAPIUrl = null, string $defaultRepository = null)
+    public function __construct(string $token, string $pathPrefix = '', string $baseUrl = '', string $defaultRepository = '')
     {
         $this->token = $token;
-        $this->baseURL = $baseURL ?? $this->baseURL;
-        $this->baseRestAPIUrl = $baseRestAPIUrl ?? $this->baseRestAPIUrl;
-        $this->defaultRepository = $defaultRepository ?? $this->defaultRepository;
+        $this->baseUrl = $baseUrl;
+        $this->pathPrefix = $pathPrefix;
+        $this->defaultRepository = $defaultRepository;
+
+        $this->client = Http::withToken($this->token)
+            ->withHeaders([
+                'Allow'        => 'application/json',
+                'Content-Type' => 'application/json',
+            ]);
     }
 
     /**
-     * @param string $method
-     * @param string $url
-     * @param array $payload
-     * @return Response
-     * @throws Exception
+     * @param $pathPrefix
      */
-    private function setClient(string $method = 'GET', string $url = '', array $payload = []): Response
+    public function setPrefixPath($pathPrefix)
     {
-        try {
-            $response = Http::withToken($this->token)
-                ->withHeaders([
-                    'Allow' => 'application/json',
-                    'Content-Type' => 'application/json',
-                ])
-                ->$method(
-                    $url,
-                    $payload
-                );
+        $this->pathPrefix = $pathPrefix;
+    }
 
-            Log::debug('response: ' . print_r($response, true));
-
-            return $response;
-        } catch (Exception | RequestException $e) {
-            Log::error("Couldn't get response: " . print_r($e->getMessage(), true));
-            throw new Exception($e->getMessage());
-        }
+    /**
+     * @return string
+     */
+    public function getPrefixPath(): string
+    {
+        return $this->pathPrefix;
     }
 
     /**
@@ -72,9 +65,11 @@ class ContentClient
      */
     public function getRepositories(): RepositoryList
     {
-        $url = $this->baseURL . $this->baseRestAPIUrl . 'repositories';
+        $url = $this->baseUrl . 'repositories';
 
-        return new RepositoryList($this->setClient('GET', $url)->json());
+        return new RepositoryList(
+            $this->client->get($url)->throw()->json()
+        );
     }
 
     /**
@@ -97,10 +92,11 @@ class ContentClient
      */
     public function listDirectory(string $folder = '', bool $recursive = false, int $per_page = 10, int $page = 0, string $order = 'asc'): Response
     {
+        $folder = $this->normalizePath($folder);
         $recursive = $recursive ? 'true' : 'false';
-        $url = $this->baseURL . $this->baseRestAPIUrl . $this->defaultRepository . '/' . $folder . '?kind=any' . '&subfolders=' . $recursive . '&page-size=' . $per_page . '&page=' . $page . '&sort-order=' . $order;
+        $url = $this->baseUrl . $this->defaultRepository . '/' . $folder . '?kind=any' . '&subfolders=' . $recursive . '&page-size=' . $per_page . '&page=' . $page . '&sort-order=' . $order;
 
-        return $this->setClient('GET', $url);
+        return $this->client->get($url)->throw();
     }
 
     /**
@@ -111,15 +107,17 @@ class ContentClient
      */
     public function createFolder(string $name, string $path = '/'): Directory
     {
-        $url = $this->baseURL . $this->baseRestAPIUrl . $this->defaultRepository . '/folders/';
+        $url = $this->baseUrl . $this->defaultRepository . '/folders/';
         $payload = [
-            'name'              => $name,
-            'path'              => $path,
-            'kind'              => 'folder',
-            'folder-purpose'    => 'generic-folder',
+            'name'           => $name,
+            'path'           => $path,
+            'kind'           => 'folder',
+            'folder-purpose' => 'generic-folder',
         ];
 
-        return new Directory($this->setClient('POST', $url, $payload)->json());
+        return new Directory(
+            $this->client->post($url, $payload)->throw()->json()
+        );
     }
 
     /**
@@ -128,20 +126,24 @@ class ContentClient
      * @return bool
      * @throws Exception
      */
-    public function folderExist(string $path, bool $recursive = false): bool
+    public function folderExist(string $path, bool $recursive = true): bool
     {
         if ($recursive) {
-            $fullPath = '';
-            $folders = array_reverse(explode('/', $path));
+            $fullPath = '/';
+            $fullPathOld = '/';
+            $folders = explode('/', $path);
+
             foreach ($folders as $folder) {
-                $fullPath .= '/' . $folder;
-                if (!$this->folderExist($fullPath, false)) {
-                    $this->createFolder($folder, dirname($fullPath));
+                $fullPath .= $folder;
+                if (!$this->folderExist($fullPath)) {
+                    $this->createFolder($folder, $fullPathOld);
                 }
+                $fullPathOld .= $folder;
             }
         }
-        $url = $this->baseURL . $this->baseRestAPIUrl . $this->defaultRepository . $path . '/metadata';
-        $response = $this->setClient('GET', $url);
+
+        $url = $this->baseUrl . $this->defaultRepository . $path . '/metadata';
+        $response = $this->client->get($url)->throw();
 
         return in_array($response->status(), [200, 440]);
     }
@@ -153,9 +155,12 @@ class ContentClient
      */
     public function getDocumentMetadata(string $path): Document
     {
-        $url = $this->baseURL . $this->baseRestAPIUrl . $this->defaultRepository . $path . '/metadata';
+        $path = $this->normalizePath($path);
+        $url = $this->baseUrl . $this->defaultRepository . $path . '/metadata';
 
-        return new Document($this->setClient('GET', $url)->json());
+        return new Document(
+            $this->client->get($url)->throw()->json()
+        );
     }
 
     /**
@@ -165,9 +170,12 @@ class ContentClient
      */
     public function getDirectoryMetadata(string $path): Directory
     {
-        $url = $this->baseURL . $this->baseRestAPIUrl . $this->defaultRepository . $path . '/metadata';
+        $path = $this->normalizePath($path);
+        $url = $this->baseUrl . $this->defaultRepository . $path . '/metadata';
 
-        return new Directory($this->setClient('GET', $url)->json());
+        return new Directory(
+            $this->client->get($url)->throw()->json()
+        );
     }
 
     /**
@@ -177,24 +185,45 @@ class ContentClient
      */
     public function getFile(string $filename = '/'): Response
     {
-        $url = $this->baseURL . $this->baseRestAPIUrl . $this->defaultRepository . '/documents/' . $filename;
+        $filenameId = $this->getDocumentMetadata($filename);
+        $url = $this->baseUrl . $this->defaultRepository . '/documents/' . $filenameId->id;
 
-        return $this->setClient('GET', $url);
+        return $this->client->get($url)->throw();
+    }
+
+    /**
+     * @param string $filename
+     * @return false|resource
+     * @throws Exception
+     */
+    public function getStreamFile(string $filename = '/')
+    {
+        $filenameId = $this->getDocumentMetadata($filename);
+        $url = $this->baseUrl . $this->defaultRepository . '/documents/' . $filenameId->id;
+        $content = $this->client->get($url)->throw()->body();
+
+        // save it to temporary dir first.
+        $tmpFilePath = sys_get_temp_dir() . '/' . Str::uuid()->toString();
+        file_put_contents($tmpFilePath, $content);
+
+        return fopen($tmpFilePath, 'rb');
     }
 
     /**
      * @param string $folder
      * @param bool $deleteContentWithSubFolders
-     * @return Response
+     * @return bool
      * @throws Exception
      */
-    public function deleteFolders(string $folder, bool $deleteContentWithSubFolders = true): Response
+    public function deleteFolders(string $folder, bool $deleteContentWithSubFolders = true): bool
     {
+        $folder = $this->normalizePath($folder);
         $deleteContentWithSubFolders = $deleteContentWithSubFolders ? 'true' : 'false';
         $folderId = $this->getDirectoryMetadata($folder);
-        $url = $this->baseURL . $this->baseRestAPIUrl . $this->defaultRepository . '/folders/' . $folderId->id . '?delete-content-and-subfolders=' . $deleteContentWithSubFolders;
+        $url = $this->baseUrl . $this->defaultRepository . '/folders/' . $folderId->id . '?delete-content-and-subfolders=' . $deleteContentWithSubFolders;
+        $request = $this->client->delete($url)->throw();
 
-        return $this->setClient('DELETE', $url);
+        return in_array($request->status(), [200]);
     }
 
     /**
@@ -204,10 +233,11 @@ class ContentClient
      */
     public function deleteFile(string $path): Response
     {
+        $path = $this->normalizePath($path);
         $filenameId = $this->getDocumentMetadata($path);
-        $url = $this->baseURL . $this->baseRestAPIUrl . $this->defaultRepository . '/documents/' . $filenameId->id;
+        $url = $this->baseUrl . $this->defaultRepository . '/documents/' . $filenameId->id;
 
-        return $this->setClient('DELETE', $url);
+        return $this->client->delete($url)->throw();
     }
 
     /**
@@ -217,41 +247,9 @@ class ContentClient
      */
     public function searchFolders(string $search): Response
     {
-        $url = $this->baseURL . $this->baseRestAPIUrl . $this->defaultRepository . '/search?q=' . $search;
+        $url = $this->baseUrl . $this->defaultRepository . '/search?q=' . $search;
 
-        return $this->setClient('GET', $url);
-    }
-
-    /**
-     * @param string $path
-     * @param $content
-     * @param string|null $purpose
-     * @param string|null $caseNumber
-     * @param bool $overwriteIfExists
-     * @return array
-     * @throws Exception
-     */
-    public function uploadFile(string $path, $content, string $purpose = null, string $caseNumber = null, bool $overwriteIfExists = true): array
-    {
-        $this->folderExist($path, true);
-        $folder = $this->getDirectoryMetadata(dirname($path));
-        $url = $this->baseURL . $this->baseRestAPIUrl . $this->defaultRepository . '/folders/' . $folder->id;
-
-        $payload = [
-            'content-stream'        => $content,
-            'name'                  => $content->getClientOriginalName(),
-            'media-type'            => $content->getClientMimeType(),
-            'filing-purpose'        => $purpose ?? 'service',
-            'filing-case-number'    => $caseNumber ?? 'record id',
-            'overwrite-if-exists'   => $overwriteIfExists ? 'true' : 'false',
-        ];
-
-        return Http::withToken($this->token)
-            ->withHeaders([
-                'Allow' => 'application/json',
-            ])
-            ->attach('content-stream', $content->getContent(), $content->getClientOriginalName())
-            ->post($url, $payload)->json();
+        return $this->client->get($url)->throw();
     }
 
     /**
@@ -259,119 +257,169 @@ class ContentClient
      * @param string $destinationFolder
      * @param string|null $destinationRepo
      * @param bool $overwriteIfExists
-     * @return Response
+     * @return bool
      * @throws Exception
      */
-    public function moveFile(string $sourceFile, string $destinationFolder, string $destinationRepo = null, bool $overwriteIfExists = true): Response
+    public function moveFile(string $sourceFile, string $destinationFolder, string $destinationRepo = null, bool $overwriteIfExists = true): bool
     {
-        $sourceFile = $this->getDocumentMetadata($sourceFile);
-        $destinationFolder = $this->getDirectoryMetadata($destinationFolder);
-        $url = $this->baseURL . $this->baseRestAPIUrl . $this->defaultRepository . '/documents/' . $sourceFile->id . '/move';
+        $sourceFile = $this->getDocumentMetadata($this->normalizePath($sourceFile));
+        $destinationFolder = $this->getDirectoryMetadata($this->normalizePath($destinationFolder));
+        $url = $this->baseUrl . $this->defaultRepository . '/documents/' . $sourceFile->id . '/move';
         $payload = [
-            'destination-folder-id'     => $destinationFolder->id,
-            'destination-repo'          => $destinationRepo ?? $this->defaultRepository,
-            'overwrite'                 => $overwriteIfExists,
+            'destination-folder-id' => $destinationFolder->id,
+            'destination-repo'      => $destinationRepo ?? $this->defaultRepository,
+            'overwrite'             => $overwriteIfExists,
         ];
+        $request = $this->client->post($url, $payload)->throw();
 
-        return $this->setClient('POST', $url, $payload);
+        return in_array($request->status(), [200, 204]);
     }
 
     /**
      * @param $path
      *
-     * @return resource|null
+     * @return false|resource
      * @throws Exception
      */
     public function readStream($path)
     {
-        $response = $this->getFile($path);
+        $path = $this->normalizePath($path);
 
-        return $response->getBody()->detach();
+        return $this->getStreamFile($path);
     }
 
     /**
      * @param $path
      *
-     * @return resource|null
+     * @return string
      * @throws Exception
      */
-    public function readRaw($path)
+    public function readRaw($path): string
     {
+        $path = $this->normalizePath($path);
         $response = $this->getFile($path);
 
-        return $response->getBody()->detach();
+        return $response->body();
     }
 
     /**
      * @param string $path
      * @param $contents
-     * @param string $message
-     * @param string|null $caseId
+     * @param string|null $purpose
+     * @param string|null $caseNumber
+     * @param bool $overwriteIfExists
+     * @return Document
+     * @throws Exception
+     */
+    public function uploadFile(string $path, $contents, string $purpose = null, string $caseNumber = null, bool $overwriteIfExists = false): Document
+    {
+        $purpose = $purpose ?? trim($this->pathPrefix, '/');
+        $caseNumber = $caseNumber ?? 'record id';
+
+        return $this->upload($path, basename($path), $contents, $purpose, $caseNumber, $overwriteIfExists);
+    }
+
+    /**
+     * @param string $path
+     * @param $filename
+     * @param $contents
+     * @param null $purpose
+     * @param null $caseNumber
      * @param bool $override
      *
      * @return Document
      * @throws Exception
      */
-    public function upload(string $path, $contents, string $message, string $caseId = null, bool $override = false): Document
+    public function upload(string $path, $filename, $contents, $purpose = null, $caseNumber = null, bool $override = false): Document
     {
-        return new Document($this->uploadFile($path, $contents, $message, $caseId, $override));
-    }
+        $mimeTypeDetector = new ExtensionMimeTypeDetector();
+        $mediaType = $mimeTypeDetector->detectMimeTypeFromPath($path);
 
-    /**
-     * @param  string  $path
-     * @param $resource
-     * @param  string  $message
-     * @param  bool  $override
-     *
-     * @return Document
-     * @throws Exception
-     */
-    public function uploadStream(string $path, $resource, string $message, bool $override = false): Document
-    {
-        if (!is_resource($resource)) {
-            throw new Exception(sprintf('Argument must be a valid resource type. %s given.', gettype($resource)));
+        $path = $this->normalizePath($path);
+        $this->folderExist($path);
+        $folder = $this->getDirectoryMetadata(dirname($path));
+        $url = $this->baseUrl . $this->defaultRepository . '/folders/' . $folder->id;
+
+        $payload = [
+            'content-stream'      => $contents,
+            'name'                => $filename,
+            'media-type'          => $mediaType,
+            'filing-purpose'      => $purpose ?? 'service',
+            'filing-case-number'  => $caseNumber ?? 'record id',
+            'overwrite-if-exists' => $override ? 'true' : 'false',
+        ];
+
+        try {
+            $res = Http::withToken($this->token)
+                ->withHeaders([
+                    'Allow' => 'application/json',
+                ])
+                ->attach('content-stream', $contents, $filename)
+                ->post($url, $payload)
+                ->throw();
+
+            return new Document($res->json());
+        } catch (Exception $e) {
+            Log::error("Couldn't get response for path '{$path}': " . print_r($e->getMessage(), true));
+            Log::error('Filename: ' . print_r($filename, true));
+            Log::error('Contents: ' . print_r($contents, true));
+            throw new Exception($e->getMessage());
         }
-
-        return $this->upload($path, stream_get_contents($resource), $message, $override);
     }
 
     /**
      * @param string $path
-     * @return Response
+     * @param $resource
+     * @param null $purpose
+     * @param null $caseNumber
+     * @param bool $override
+     *
+     * @return Document
      * @throws Exception
      */
-    public function delete(string $path): Response
+    public function uploadStream(string $path, $resource, $purpose = null, $caseNumber = null, bool $override = false): Document
     {
-        return $this->deleteFile($path);
+        $path = $this->normalizePath($path);
+
+        if (!is_resource($resource)) {
+            throw new Exception(sprintf('Argument must be a valid resource type. %s given.', gettype($resource)));
+        }
+
+        return $this->upload($path, basename($path), stream_get_contents($resource), $purpose, $caseNumber, $override);
     }
 
     /**
-     * @param  string  $directory
-     * @param  bool  $recursive
+     * @param string $path
+     * @return bool
+     * @throws Exception
+     */
+    public function delete(string $path): bool
+    {
+        $path = $this->normalizePath($path);
+        $response = $this->deleteFile($path);
+
+        return in_array($response->status(), [200]);
+    }
+
+    /**
+     * @param string $directory
+     * @param bool $recursive
      *
      * @return iterable
      * @throws Exception
      */
     public function tree(string $directory = '/', bool $recursive = false): iterable
     {
+        $directory = $this->normalizePath($directory);
         $page = 1;
+
         do {
-            $response = $this->listDirectory($directory, $recursive, 10, ++$page);
-            yield $response;
-        } while ($this->responseHasNextPage(new ContentItemList($response)));
-    }
-
-    /**
-     * @param Response $response
-     * @param bool $json
-     *
-     * @return Response
-     */
-    private function responseContents(Response $response, bool $json = true): Response
-    {
-        $contents = $response->getBody()->getContents();
-
-        return ($json) ? json_decode($contents, true) : $contents;
+            yield $this->listDirectory($directory, $recursive, 10, ++$page);
+        } while ($this->responseHasNextPage(
+            new ContentItemList(
+                $this->listDirectory($directory, $recursive, 10, ++$page)
+            )
+        ));
     }
 
     /**
@@ -379,12 +427,17 @@ class ContentClient
      *
      * @return bool
      */
-    private function responseHasNextPage(ContentItemList $response): bool
+    protected function responseHasNextPage(ContentItemList $response): bool
     {
-        if ($response->totalPages > 0 && $response->page != $response->totalPages) {
-            return true;
+        return $response->totalPages > 0 && $response->page != $response->totalPages;
+    }
+
+    protected function normalizePath($path)
+    {
+        if (strpos($path, $this->pathPrefix) === false) {
+            $path = $this->pathPrefix . $path;
         }
 
-        return false;
+        return $path;
     }
 }

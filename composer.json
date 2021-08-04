@@ -12,7 +12,7 @@
     "license": "MIT",
     "require": {
         "php": "^7.4 || ^8.0",
-        "laravel/framework": "^8.0",
+        "laravel/framework": "^8.40",
         "ext-json": "*",
         "guzzlehttp/guzzle": "^7.0.1",
         "league/flysystem": "^1.0"

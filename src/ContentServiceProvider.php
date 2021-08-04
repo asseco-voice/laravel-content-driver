@@ -2,10 +2,6 @@
 
 namespace Asseco\ContentFileStorageDriver;
 
-/**
- * laravel Service Provider.
- */
-
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\ServiceProvider as AbstractServiceProvider;
 use League\Flysystem\Filesystem;
@@ -13,9 +9,12 @@ use League\Flysystem\Filesystem;
 class ContentServiceProvider extends AbstractServiceProvider
 {
     /**
-     * @var string The name of the driver.
+     * Register the application services.
      */
-    const DRIVER_NAME = 'content-file-storage';
+    public function register()
+    {
+        $this->mergeConfigFrom(__DIR__ . '/../config/filesystem.php', 'filesystem.disks');
+    }
 
     /**
      * Bootstrap the application services.
@@ -25,21 +24,12 @@ class ContentServiceProvider extends AbstractServiceProvider
      */
     public function boot()
     {
-        Storage::extend(self::DRIVER_NAME, function ($app, $config) {
-            $client = new ContentClient($config['token'], $config['baseURL'], $config['baseRestAPIUrl'], $config['defaultRepository']);
+        Storage::extend('content-file-storage', function ($app, $config) {
+            $client = new ContentClient(request()->bearerToken(), $config['base_url'], $config['base_rest_api_url'], $config['default_repository']);
 
             return new Filesystem(
                 new ContentAdapter($client)
             );
         });
-    }
-
-    /**
-     * Register the application services.
-     */
-    public function register()
-    {
-        // No services to register.
-        $this->mergeConfigFrom(__DIR__ . '/../config/filesystem.php', 'filesystem.disks');
     }
 }
