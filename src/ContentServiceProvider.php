@@ -13,7 +13,7 @@ class ContentServiceProvider extends AbstractServiceProvider
      */
     public function register()
     {
-        $this->mergeConfigFrom(__DIR__ . '/../config/filesystem.php', 'filesystem.disks');
+        $this->mergeConfigFrom(__DIR__ . '/../config/filesystems.php', 'filesystems.disks');
     }
 
     /**
