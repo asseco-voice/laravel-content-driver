@@ -2,7 +2,7 @@
 
 namespace Asseco\ContentFileStorageDriver\Responses;
 
-class Directory extends ContentItem
+class Folder extends ContentItem
 {
     public string $folderPurpose;
 

@@ -2,60 +2,24 @@
 
 namespace Asseco\ContentFileStorageDriver;
 
-use Asseco\ContentFileStorageDriver\Responses\Directory;
 use Asseco\ContentFileStorageDriver\Responses\Document;
-use DateTime;
+use Asseco\ContentFileStorageDriver\Responses\Folder;
+use Carbon\Carbon;
 use Exception;
 use League\Flysystem\Adapter\AbstractAdapter;
 use League\Flysystem\Config;
 use League\MimeTypeDetection\ExtensionMimeTypeDetector;
 
-/**
- * Class ContentAdapter.
- */
 class ContentAdapter extends AbstractAdapter
 {
-    /**
-     * @var ContentClient
-     */
     protected ContentClient $client;
-
-    /**
-     * @var ExtensionMimeTypeDetector
-     */
     protected ExtensionMimeTypeDetector $mimeTypeDetector;
 
-    /**
-     * ContentAdapter constructor.
-     *
-     * @param ContentClient $client
-     * @param string $prefix
-     */
     public function __construct(ContentClient $client, string $prefix = '')
     {
-        $this->setClient($client);
+        $this->client = $client;
         $this->setPathPrefix($prefix);
         $this->mimeTypeDetector = new ExtensionMimeTypeDetector();
-    }
-
-    /**
-     * @param string $path
-     *
-     * @return bool
-     * @throws Exception
-     */
-    public function fileExists(string $path): bool
-    {
-        try {
-            $this->client->getDocumentMetadata($path);
-        } catch (Exception $e) {
-            if ($e instanceof Exception && $e->getCode() == 404) {
-                return false;
-            }
-            throw new Exception('Unable to check file existence for: ' . $path);
-        }
-
-        return true;
     }
 
     /**
@@ -68,9 +32,9 @@ class ContentAdapter extends AbstractAdapter
      */
     public function write($path, $contents, Config $config): Document
     {
-        $override = $this->fileExists($path);
+        $overwrite = $this->fileExists($path);
 
-        return $this->client->uploadFile($path, $contents, $override);
+        return $this->client->upload($path, $contents, $overwrite);
     }
 
     /**
@@ -83,9 +47,9 @@ class ContentAdapter extends AbstractAdapter
      */
     public function writeStream($path, $resource, Config $config): Document
     {
-        $override = $this->fileExists($path);
+        $overwrite = $this->fileExists($path);
 
-        return $this->client->uploadStream($path, $resource, $override);
+        return $this->client->uploadStream($path, $resource, $overwrite);
     }
 
     /**
@@ -100,7 +64,7 @@ class ContentAdapter extends AbstractAdapter
      */
     public function update($path, $contents, Config $config): Document
     {
-        return $this->client->upload($path, $contents, null, true);
+        return $this->client->upload($path, $contents, true);
     }
 
     /**
@@ -115,7 +79,7 @@ class ContentAdapter extends AbstractAdapter
      */
     public function updateStream($path, $resource, Config $config): Document
     {
-        return $this->client->upload($path, $resource, null, true);
+        return $this->client->upload($path, $resource, true);
     }
 
     /**
@@ -129,7 +93,7 @@ class ContentAdapter extends AbstractAdapter
      */
     public function put($path, $resource): Document
     {
-        return $this->client->uploadFile($path, $resource);
+        return $this->client->upload($path, $resource);
     }
 
     /**
@@ -243,20 +207,15 @@ class ContentAdapter extends AbstractAdapter
     {
         $contents = $this->client->readRaw($path);
 
-        return $this->client->upload($newpath, $contents, 'copy file', 'some id', true);
+        return $this->client->upload($newpath, $contents, true);
     }
 
-    /**
-     * @param string $path
-     * @return DateTime|false
-     * @throws Exception
-     */
     public function getTimestamp($path)
     {
         $path = $this->applyPathPrefix($path);
-        $response = $this->client->getDocumentMetadata($path);
+        $response = $this->client->document->metadataByPath($path);
 
-        return DateTime::createFromFormat("Y-m-d\TH:i:s.uO", $response->changedOn);
+        return Carbon::createFromFormat("Y-m-d\TH:i:s.uO", $response->changedOn);
     }
 
     /**
@@ -285,7 +244,7 @@ class ContentAdapter extends AbstractAdapter
     public function getSize($path): int
     {
         $path = $this->applyPathPrefix($path);
-        $meta = $this->client->getDocumentMetadata($path);
+        $meta = $this->client->document->metadataByPath($path);
 
         return $meta->sizeInBytes;
     }
@@ -296,14 +255,14 @@ class ContentAdapter extends AbstractAdapter
      * @param string $dirname directory name
      * @param Config $config
      *
-     * @return Directory
+     * @return Folder
      * @throws Exception
      */
-    public function createDir($dirname, Config $config): Directory
+    public function createDir($dirname, Config $config): Folder
     {
         $path = $this->applyPathPrefix($dirname);
 
-        return $this->client->createFolder($path);
+        return $this->client->folder->create($path);
     }
 
     /**
@@ -361,35 +320,36 @@ class ContentAdapter extends AbstractAdapter
         return $this->client->tree($directory, $recursive);
     }
 
-    /**
-     * @return ContentClient
-     */
-    public function getClient(): ContentClient
-    {
-        return $this->client;
-    }
-
-    /**
-     * @param ContentClient $client
-     */
-    public function setClient(ContentClient $client)
-    {
-        $this->client = $client;
-    }
-
-    /**
-     * @param string $path
-     * @return Directory|Document
-     * @throws Exception
-     */
     public function getMetadata($path)
     {
         $path = $this->applyPathPrefix($path);
 
         if (substr($path, -1) === '/') {
-            return $this->client->getDirectoryMetadata($path);
+            return $this->client->folder->metadataByPath($path);
         }
 
-        return $this->client->getDocumentMetadata($path);
+        return $this->client->document->metadataByPath($path);
     }
+
+    /**
+     * @param string $path
+     *
+     * @return bool
+     * @throws Exception
+     */
+    public function fileExists(string $path): bool
+    {
+        try {
+            $this->client->document->metadataByPath($path);
+        } catch (Exception $e) {
+            if ($e instanceof Exception && $e->getCode() == 404) {
+                return false;
+            }
+
+            throw new Exception('Unable to check file existence for: ' . $path);
+        }
+
+        return true;
+    }
+
 }
