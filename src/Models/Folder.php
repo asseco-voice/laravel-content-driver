@@ -79,7 +79,7 @@ class Folder extends AbstractContent
 
     public function recursiveCreate(string $path, string $basePath = '/')
     {
-        $folders = dirname(array_filter(explode('/', $path)));
+        $folders = array_filter(explode('/', dirname($path)));
 
         foreach ($folders as $folder) {
             if (!$this->exists($folder, $basePath)) {

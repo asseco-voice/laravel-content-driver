@@ -29,7 +29,7 @@ abstract class AbstractContent
     {
         $resource = trim($this->apiResourceName(), '/');
 
-        return "{$this->url()}/$resource";
+        return "{$this->url()}$resource";
     }
 
     abstract public function apiResourceName();
