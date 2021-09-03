@@ -32,7 +32,7 @@ abstract class AbstractContent
         return "{$this->url()}/$resource";
     }
 
-    public abstract function apiResourceName();
+    abstract public function apiResourceName();
 
     protected function normalizePath($path)
     {
@@ -43,8 +43,7 @@ abstract class AbstractContent
         return $path;
     }
 
-    public abstract function responseClass(): string;
-
+    abstract public function responseClass(): string;
 
     public function metadataById(string $id): ContentItem
     {

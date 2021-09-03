@@ -351,5 +351,4 @@ class ContentAdapter extends AbstractAdapter
 
         return true;
     }
-
 }

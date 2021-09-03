@@ -82,7 +82,6 @@ class Folder extends AbstractContent
         $folders = dirname(array_filter(explode('/', $path)));
 
         foreach ($folders as $folder) {
-
             if (!$this->exists($folder, $basePath)) {
                 $this->create($folder, $basePath);
             }
@@ -99,5 +98,4 @@ class Folder extends AbstractContent
 
         return $this->client->get($url)->throw();
     }
-
 }

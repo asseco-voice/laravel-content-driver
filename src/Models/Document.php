@@ -112,5 +112,4 @@ class Document extends AbstractContent
 
         return $this->client->delete($url)->throw();
     }
-
 }
