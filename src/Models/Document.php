@@ -56,13 +56,13 @@ class Document extends AbstractContent
         }
     }
 
-    public function uploadStream(string $path, $resource, bool $overwrite = false): DocumentResponse
+    public function uploadStream(string $url, string $path, $resource, bool $overwrite = false): DocumentResponse
     {
         if (!is_resource($resource)) {
             throw new Exception(sprintf('Argument must be a valid resource type. %s given.', gettype($resource)));
         }
 
-        return $this->upload($path, stream_get_contents($resource), $overwrite);
+        return $this->upload($url, $path, stream_get_contents($resource), $overwrite);
     }
 
     public function get(string $filename = '/'): Response

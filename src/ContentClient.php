@@ -29,7 +29,6 @@ class ContentClient
         $this->client = Http::withToken(request()->bearerToken())
             ->withHeaders([
                 'Allow'        => 'application/json',
-                'Content-Type' => 'application/json',
             ]);
 
         $this->folder = new Folder($this->client, $this->url(), $this->prefix);
@@ -45,14 +44,14 @@ class ContentClient
     {
         $url = $this->folder->createAndReturnUrl($path);
 
-        $this->document->upload($url, $path, $contents, $overwrite);
+        return $this->document->upload($url, $path, $contents, $overwrite);
     }
 
     public function uploadStream(string $path, $contents, bool $overwrite = false)
     {
         $url = $this->folder->createAndReturnUrl($path);
 
-        $this->document->uploadStream($url, $contents, $overwrite);
+        return $this->document->uploadStream($url, $path, $contents, $overwrite);
     }
 
     /**
