@@ -79,7 +79,7 @@ class Document extends AbstractContent
         $filename = $this->normalizePath($filename);
 
         $filenameId = $this->metadataByPath($filename);
-        $url = $this->url() . '/documents/' . $filenameId->id;
+        $url = $this->url() . 'documents/' . $filenameId->id;
         $content = $this->client->get($url)->throw()->body();
 
         // save it to temporary dir first.
@@ -93,7 +93,7 @@ class Document extends AbstractContent
     {
         $sourceFile = $this->metadataByPath($this->normalizePath($sourceFile));
         $destinationFolder = $this->folderMetadata($this->normalizePath($destinationFolder));
-        $url = $this->url() . '/documents/' . $sourceFile->id . '/move';
+        $url = $this->url() . 'documents/' . $sourceFile->id . '/move';
         $payload = [
             'destination-folder-id' => $destinationFolder->id,
             'destination-repo'      => $destinationRepo ?? $this->repository,
@@ -108,7 +108,7 @@ class Document extends AbstractContent
     {
         $path = $this->normalizePath($path);
         $filenameId = $this->metadataByPath($path);
-        $url = $this->url() . '/documents/' . $filenameId->id;
+        $url = $this->url() . 'documents/' . $filenameId->id;
 
         return $this->client->delete($url)->throw();
     }
