@@ -92,14 +92,13 @@ class Document extends AbstractContent
     public function moveFile(string $sourceFile, string $destinationFolder, string $destinationRepo = null, bool $overwriteIfExists = true): bool
     {
         $sourceFile = $this->metadataByPath($this->normalizePath($sourceFile));
-        $destinationFolder = $this->folderMetadata($this->normalizePath($destinationFolder));
-        $url = $this->url() . 'documents/' . $sourceFile->id . '/move';
-        $payload = [
-            'destination-folder-id' => $destinationFolder->id,
-            'destination-repo'      => $destinationRepo ?? $this->repository,
-            'overwrite'             => $overwriteIfExists,
-        ];
-        $request = $this->client->post($url, $payload)->throw();
+        $destinationFolder = $this->metadataByPath($this->normalizePath(dirname($destinationFolder)));
+
+        $overwriteIfExists = $overwriteIfExists ? 'true' : 'false';
+        $destinationRepo = $destinationRepo ?? $this->repository;
+
+        $url = $this->url() . 'documents/' . $sourceFile->id . '/move?destination-folder-id=' . $destinationFolder->id . '&destination-repo=' . $destinationRepo . '&overwrite=' . $overwriteIfExists;
+        $request = $this->client->post($url)->throw();
 
         return in_array($request->status(), [JsonResponse::HTTP_OK, JsonResponse::HTTP_NO_CONTENT]);
     }

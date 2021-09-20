@@ -31,8 +31,8 @@ class ContentClient
                 'Allow'        => 'application/json',
             ]);
 
-        $this->folder = new Folder($this->client, $this->url(), $this->prefix);
-        $this->document = new Document($this->client, $this->url(), $this->prefix);
+        $this->folder = new Folder($this->client, $this->url(), $this->prefix, $this->repository);
+        $this->document = new Document($this->client, $this->url(), $this->prefix, $this->repository);
     }
 
     protected function url(): string
@@ -74,6 +74,11 @@ class ContentClient
     public function readRaw($path): string
     {
         return $this->document->get($path)->body();
+    }
+
+    public function moveFile(string $sourceFile, string $destinationFolder, string $destinationRepo = null, bool $overwriteIfExists = true): bool
+    {
+        return $this->document->moveFile($sourceFile, $destinationFolder, $destinationRepo, $overwriteIfExists);
     }
 
     /**

@@ -10,12 +10,14 @@ abstract class AbstractContent
     protected PendingRequest $client;
     protected string $url;
     protected string $prefix;
+    protected string $repository;
 
-    public function __construct(PendingRequest $client, string $url, string $prefix)
+    public function __construct(PendingRequest $client, string $url, string $prefix, string $repository)
     {
         $this->client = $client;
         $this->url = $url;
         $this->prefix = $prefix;
+        $this->repository = $repository;
     }
 
     public function url()
