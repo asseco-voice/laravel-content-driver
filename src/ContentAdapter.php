@@ -229,7 +229,7 @@ class ContentAdapter extends AbstractAdapter
 
         $contents = $this->client->readRaw($path);
 
-        return $this->client->upload($newpath, $contents, $this->getPathPrefix(),true);
+        return $this->client->upload($newpath, $contents, $this->getPathPrefix(), true);
     }
 
     public function getTimestamp($path)
