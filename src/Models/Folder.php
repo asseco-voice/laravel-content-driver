@@ -113,7 +113,7 @@ class Folder extends AbstractContent
         return true;
     }
 
-    public function listDirectory(string $folder = '', bool $recursive = false, int $page = 0, int $perPage = 10, string $order = 'asc'): Response
+    public function listDirectory(string $folder = '', bool $recursive = false, int $page = 0, int $perPage = 10, string $order = 'asc'): array
     {
         $folder = $this->normalizePath($folder);
         $recursive = $recursive ? 'true' : 'false';
