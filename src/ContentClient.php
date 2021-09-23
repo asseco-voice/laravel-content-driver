@@ -35,7 +35,7 @@ class ContentClient
 
     protected function url(): string
     {
-        return $this->apiUrl . $this->repository;
+        return rtrim($this->apiUrl, '/') . '/' . $this->repository;
     }
 
     public function upload(string $path, $contents, string $purpose = null, bool $overwrite = false)

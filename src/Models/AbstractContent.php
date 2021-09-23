@@ -20,9 +20,7 @@ abstract class AbstractContent
 
     public function url()
     {
-        $url = rtrim($this->url, '/');
-
-        return "$url/";
+        return rtrim($this->url, '/') . '/';
     }
 
     public function resourceUrl()
