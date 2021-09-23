@@ -116,7 +116,7 @@ class Folder extends AbstractContent
     {
         $folder = $this->normalizePath($folder);
         $recursive = $recursive ? 'true' : 'false';
-        $url = "{$this->url()}/{$folder}?kind=any&subfolders={$recursive}&page-size={$perPage}&page={$page} &sort-order={$order}";
+        $url = "{$this->url()}/{$folder}?kind=any&subfolders={$recursive}&page-size={$perPage}&page={$page}&sort-order={$order}";
 
         return $this->client->get($url)->throw();
     }
