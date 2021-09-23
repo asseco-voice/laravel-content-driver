@@ -77,7 +77,7 @@ class ContentClient
     }
 
     /**
-     * @param string $path
+     * @param  string  $path
      * @return bool
      *
      * @throws Exception
@@ -90,8 +90,8 @@ class ContentClient
     }
 
     /**
-     * @param string $directory
-     * @param bool $recursive
+     * @param  string  $directory
+     * @param  bool  $recursive
      * @return array
      *
      * @throws Exception
@@ -110,7 +110,6 @@ class ContentClient
             $directories = array_merge($directories, $directoryNames);
 
             $page++;
-
         } while ($directoryList['total-pages'] > $directoryList['page']);
 
         return $directories;
