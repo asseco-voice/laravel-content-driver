@@ -1,10 +1,12 @@
 <?php
 
+use Illuminate\Support\Str;
+
 return [
     'content' => [
-        'driver'             => 'content-file-storage',
-        'base_url'           => env('CONTENT_BASE_URL'),
-        'base_rest_api_url'  => env('CONTENT_BASE_REST_API_URL'),
-        'default_repository' => env('CONTENT_DEFAULT_REPOSITORY'),
+        'driver'     => 'content-file-storage',
+        'api_url'    => env('CONTENT_API_URL'),
+        'repository' => env('CONTENT_REPOSITORY', 'dms'),
+        'root'       => env('CONTENT_ROOT', Str::snake(env('APP_NAME'))),
     ],
 ];
