@@ -97,7 +97,7 @@ class Document extends AbstractContent
         $overwriteIfExists = $overwriteIfExists ? 'true' : 'false';
         $destinationRepo = $destinationRepo ?? $this->repository;
 
-        $url = $this->url() . 'documents/' . $sourceFile->id . '/move?destination-folder-id=' . $destinationFolder->id . '&destination-repo=' . $destinationRepo . '&overwrite=' . $overwriteIfExists;
+        $url = "{$this->url()}documents/{$sourceFile->id}/move?destination-folder-id={$destinationFolder->id}&destination-repo={$destinationRepo}&overwrite={$overwriteIfExists}";
         $request = $this->client->post($url)->throw();
 
         return in_array($request->status(), [JsonResponse::HTTP_OK, JsonResponse::HTTP_NO_CONTENT]);

@@ -6,6 +6,7 @@ use Asseco\ContentFileStorageDriver\Responses\Folder as FolderResponse;
 use Exception;
 use Illuminate\Http\Client\Response;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Log;
 
 class Folder extends AbstractContent
 {
@@ -77,39 +78,45 @@ class Folder extends AbstractContent
         return $response->status() === JsonResponse::HTTP_OK;
     }
 
-    public function recursiveCreateFile(string $path, string $basePath = '/')
+    public function recursiveCreateFile(string $path, string $basePath = '/'): bool
     {
-        $folders = array_filter(explode('/', dirname($this->normalizePath($path))));
+        $normalizedPath = dirname($this->normalizePath($path));
 
-        foreach ($folders as $folder) {
-            if (!$this->exists($folder, $basePath)) {
-                $this->create($folder, $basePath);
-            }
-
-            $basePath .= "$folder/";
-        }
+        return $this->recursiveCreate($normalizedPath, $basePath);
     }
 
-    public function recursiveCreate(string $path, string $basePath = '/'): FolderResponse
+    public function recursiveCreateFolder(string $path, string $basePath = '/'): bool
     {
-        $folders = array_filter(explode('/', $this->normalizePath($path)));
+        $normalizedPath = $this->normalizePath($path);
 
-        foreach ($folders as $folder) {
-            if (!$this->exists($folder, $basePath)) {
-                $currentFolder = $this->create($folder, $basePath);
+        return $this->recursiveCreate($normalizedPath, $basePath);
+    }
+
+    protected function recursiveCreate(string $normalizedPath, string $basePath = '/'): bool
+    {
+        $folders = array_filter(explode('/', $normalizedPath));
+
+        try {
+            foreach ($folders as $folder) {
+                if (!$this->exists($folder, $basePath)) {
+                    $this->create($folder, $basePath);
+                }
+
+                $basePath .= "$folder/";
             }
-
-            $basePath .= "$folder/";
+        } catch (Exception $e) {
+            Log::error($e);
+            return false;
         }
 
-        return $currentFolder;
+        return true;
     }
 
     public function listDirectory(string $folder = '', bool $recursive = false, int $perPage = 10, int $page = 0, string $order = 'asc'): Response
     {
         $folder = $this->normalizePath($folder);
         $recursive = $recursive ? 'true' : 'false';
-        $url = $this->url() . '/' . $folder . '?kind=any' . '&subfolders=' . $recursive . '&page-size=' . $perPage . '&page=' . $page . '&sort-order=' . $order;
+        $url = "{$this->url()}/{$folder}?kind=any&subfolders={$recursive}&page-size={$perPage}&page={$page} &sort-order={$order}";
 
         return $this->client->get($url)->throw();
     }
