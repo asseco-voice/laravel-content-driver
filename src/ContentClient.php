@@ -38,18 +38,18 @@ class ContentClient
         return rtrim($this->apiUrl, '/') . '/' . $this->repository;
     }
 
-    public function upload(string $path, $contents, string $purpose = null, bool $overwrite = false)
+    public function upload(string $path, $contents, bool $overwrite = false)
     {
         $url = $this->folder->createAndReturnUrl($path);
 
-        return $this->document->upload($url, $path, $contents, $purpose, $overwrite);
+        return $this->document->upload($url, $path, $contents, $overwrite);
     }
 
-    public function uploadStream(string $path, $contents, string $purpose = null, bool $overwrite = false)
+    public function uploadStream(string $path, $contents, bool $overwrite = false)
     {
         $url = $this->folder->createAndReturnUrl($path);
 
-        return $this->document->uploadStream($url, $path, $contents, $purpose, $overwrite);
+        return $this->document->uploadStream($url, $path, $contents, $overwrite);
     }
 
     /**

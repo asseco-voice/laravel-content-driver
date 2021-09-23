@@ -22,11 +22,9 @@ class Document extends AbstractContent
         return DocumentResponse::class;
     }
 
-    public function upload(string $url, string $path, $contents, string $purpose = null, bool $overwrite = false): DocumentResponse
+    public function upload(string $url, string $path, $contents, bool $overwrite = false): DocumentResponse
     {
         $filename = basename($path);
-
-        $purpose = trim($purpose, '/');
 
         $mimeTypeDetector = new ExtensionMimeTypeDetector();
         $mediaType = $mimeTypeDetector->detectMimeTypeFromPath($path);
@@ -35,7 +33,7 @@ class Document extends AbstractContent
             'content-stream'      => $contents,
             'name'                => $filename,
             'media-type'          => $mediaType,
-            'filing-purpose'      => $purpose ?? 'service',
+            'filing-purpose'      => 'service',
             'filing-case-number'  => 'record id',
             'overwrite-if-exists' => $overwrite ? 'true' : 'false',
         ];
@@ -55,13 +53,13 @@ class Document extends AbstractContent
         }
     }
 
-    public function uploadStream(string $url, string $path, $resource, string $purpose = null, bool $overwrite = false): DocumentResponse
+    public function uploadStream(string $url, string $path, $resource, bool $overwrite = false): DocumentResponse
     {
         if (!is_resource($resource)) {
             throw new Exception(sprintf('Argument must be a valid resource type. %s given.', gettype($resource)));
         }
 
-        return $this->upload($url, $path, stream_get_contents($resource), $purpose, $overwrite);
+        return $this->upload($url, $path, stream_get_contents($resource), $overwrite);
     }
 
     public function get(string $filename = '/'): Response
