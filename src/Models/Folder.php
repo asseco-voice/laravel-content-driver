@@ -67,7 +67,7 @@ class Folder extends AbstractContent
 
     public function exists(string $path, string $basePath = '/'): bool
     {
-        $url = $this->url() . $basePath . $path . '/metadata';
+        $url = $this->url() . trim($basePath . $path, '/') . '/metadata';
 
         try {
             $response = $this->client->get($url);
