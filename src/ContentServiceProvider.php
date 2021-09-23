@@ -31,7 +31,7 @@ class ContentServiceProvider extends AbstractServiceProvider
                 $config['repository']
             );
 
-            return new Filesystem(new ContentAdapter($client));
+            return new Filesystem(new ContentAdapter($client, $config['root']));
         });
     }
 }

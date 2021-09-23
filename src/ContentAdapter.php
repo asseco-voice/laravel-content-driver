@@ -79,7 +79,7 @@ class ContentAdapter extends AbstractAdapter
      */
     public function updateStream($path, $resource, Config $config): Document
     {
-        return $this->client->upload($path, $resource, true);
+        return $this->client->uploadStream($path, $resource, true);
     }
 
     /**
@@ -113,12 +113,12 @@ class ContentAdapter extends AbstractAdapter
     /**
      * @param string $path
      *
-     * @return string
+     * @return array
      * @throws Exception
      */
     public function read($path)
     {
-        return $this->client->readRaw($path);
+        return ['contents' => $this->client->readRaw($path)];
     }
 
     /**
@@ -191,7 +191,7 @@ class ContentAdapter extends AbstractAdapter
      */
     public function rename($path, $newpath): bool
     {
-        return $this->client->moveFile($path, $newpath);
+        return $this->client->document->moveFile($path, $newpath);
     }
 
     /**
@@ -215,15 +215,15 @@ class ContentAdapter extends AbstractAdapter
         $path = $this->applyPathPrefix($path);
         $response = $this->client->document->metadataByPath($path);
 
-        return Carbon::createFromFormat("Y-m-d\TH:i:s.uO", $response->changedOn);
+        return ['timestamp' => Carbon::createFromFormat("Y-m-d\TH:i:s.uO", $response->changedOn)->getTimestamp()];
     }
 
     /**
      * @param string $path
-     * @return string
+     * @return array
      * @throws Exception
      */
-    public function getMimetype($path): string
+    public function getMimetype($path): array
     {
         $path = $this->applyPathPrefix($path);
         $mimeType = $this->mimeTypeDetector->detectMimeTypeFromPath($path);
@@ -232,21 +232,21 @@ class ContentAdapter extends AbstractAdapter
             throw new Exception('Unable to retrieve Metadata mimeType: ' . $path);
         }
 
-        return $mimeType;
+        return ['mimetype' => $mimeType];
     }
 
     /**
      * @param string $path
      *
-     * @return int
+     * @return array
      * @throws Exception
      */
-    public function getSize($path): int
+    public function getSize($path): array
     {
         $path = $this->applyPathPrefix($path);
         $meta = $this->client->document->metadataByPath($path);
 
-        return $meta->sizeInBytes;
+        return ['size' => $meta->sizeInBytes];
     }
 
     /**
@@ -260,9 +260,7 @@ class ContentAdapter extends AbstractAdapter
      */
     public function createDir($dirname, Config $config): Folder
     {
-        $path = $this->applyPathPrefix($dirname);
-
-        return $this->client->folder->create($path);
+        return $this->client->folder->recursiveCreate($dirname);
     }
 
     /**
@@ -274,7 +272,7 @@ class ContentAdapter extends AbstractAdapter
      */
     public function deleteDir($dirname): bool
     {
-        return $this->client->deleteFolders($dirname);
+        return $this->client->folder->delete($dirname);
     }
 
     /**
@@ -340,6 +338,8 @@ class ContentAdapter extends AbstractAdapter
     public function fileExists(string $path): bool
     {
         try {
+            $path = $this->applyPathPrefix($path);
+
             $this->client->document->metadataByPath($path);
         } catch (Exception $e) {
             if ($e instanceof Exception && $e->getCode() == 404) {

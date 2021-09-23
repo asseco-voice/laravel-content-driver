@@ -76,11 +76,6 @@ class ContentClient
         return $this->document->get($path)->body();
     }
 
-    public function moveFile(string $sourceFile, string $destinationFolder, string $destinationRepo = null, bool $overwriteIfExists = true): bool
-    {
-        return $this->document->moveFile($sourceFile, $destinationFolder, $destinationRepo, $overwriteIfExists);
-    }
-
     /**
      * @param string $path
      * @return bool

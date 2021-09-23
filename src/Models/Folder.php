@@ -35,7 +35,7 @@ class Folder extends AbstractContent
 
     public function createAndReturnUrl(string $path): string
     {
-        $this->recursiveCreate($path);
+        $this->recursiveCreateFile($path);
 
         $folder = $this->metadataByPath(dirname($path));
 
@@ -77,7 +77,7 @@ class Folder extends AbstractContent
         return $response->status() === JsonResponse::HTTP_OK;
     }
 
-    public function recursiveCreate(string $path, string $basePath = '/')
+    public function recursiveCreateFile(string $path, string $basePath = '/')
     {
         $folders = array_filter(explode('/', dirname($this->normalizePath($path))));
 
@@ -88,6 +88,21 @@ class Folder extends AbstractContent
 
             $basePath .= "$folder/";
         }
+    }
+
+    public function recursiveCreate(string $path, string $basePath = '/'): FolderResponse
+    {
+        $folders = array_filter(explode('/', $this->normalizePath($path)));
+
+        foreach ($folders as $folder) {
+            if (!$this->exists($folder, $basePath)) {
+                $currentFolder = $this->create($folder, $basePath);
+            }
+
+            $basePath .= "$folder/";
+        }
+
+        return $currentFolder;
     }
 
     public function listDirectory(string $folder = '', bool $recursive = false, int $perPage = 10, int $page = 0, string $order = 'asc'): Response
