@@ -31,9 +31,10 @@ class ContentAdapter extends AbstractAdapter
      */
     public function write($path, $contents, Config $config): Document
     {
+        $path = $this->applyPathPrefix($path);
         $overwrite = $this->fileExists($path);
 
-        return $this->client->upload($path, $contents, $overwrite);
+        return $this->client->upload($path, $contents, $this->getPathPrefix(), $overwrite);
     }
 
     /**
@@ -46,9 +47,10 @@ class ContentAdapter extends AbstractAdapter
      */
     public function writeStream($path, $resource, Config $config): Document
     {
+        $path = $this->applyPathPrefix($path);
         $overwrite = $this->fileExists($path);
 
-        return $this->client->uploadStream($path, $resource, $overwrite);
+        return $this->client->uploadStream($path, $resource, $this->getPathPrefix(), $overwrite);
     }
 
     /**
@@ -63,7 +65,9 @@ class ContentAdapter extends AbstractAdapter
      */
     public function update($path, $contents, Config $config): Document
     {
-        return $this->client->upload($path, $contents, true);
+        $path = $this->applyPathPrefix($path);
+
+        return $this->client->upload($path, $contents, $this->getPathPrefix(), true);
     }
 
     /**
@@ -78,7 +82,9 @@ class ContentAdapter extends AbstractAdapter
      */
     public function updateStream($path, $resource, Config $config): Document
     {
-        return $this->client->uploadStream($path, $resource, true);
+        $path = $this->applyPathPrefix($path);
+
+        return $this->client->uploadStream($path, $resource, $this->getPathPrefix(), true);
     }
 
     /**
@@ -92,7 +98,9 @@ class ContentAdapter extends AbstractAdapter
      */
     public function put($path, $resource): Document
     {
-        return $this->client->upload($path, $resource);
+        $path = $this->applyPathPrefix($path);
+
+        return $this->client->upload($path, $resource, $this->getPathPrefix());
     }
 
     /**
@@ -106,7 +114,9 @@ class ContentAdapter extends AbstractAdapter
      */
     public function putStream($path, $resource): Document
     {
-        return $this->client->uploadStream($path, $resource);
+        $path = $this->applyPathPrefix($path);
+
+        return $this->client->uploadStream($path, $resource, $this->getPathPrefix());
     }
 
     /**
@@ -117,6 +127,8 @@ class ContentAdapter extends AbstractAdapter
      */
     public function read($path)
     {
+        $path = $this->applyPathPrefix($path);
+
         return ['contents' => $this->client->readRaw($path)];
     }
 
@@ -128,6 +140,7 @@ class ContentAdapter extends AbstractAdapter
      */
     public function readStream($path)
     {
+        $path = $this->applyPathPrefix($path);
         $resource = $this->client->readStream($path);
 
         if ($resource === null) {
@@ -156,6 +169,8 @@ class ContentAdapter extends AbstractAdapter
      */
     public function delete($path): bool
     {
+        $path = $this->applyPathPrefix($path);
+
         return $this->client->delete($path);
     }
 
@@ -191,6 +206,10 @@ class ContentAdapter extends AbstractAdapter
      */
     public function rename($path, $newpath): bool
     {
+        //TODO: implement rename instead of move
+        $path = $this->applyPathPrefix($path);
+        $newpath = $this->applyPathPrefix($newpath);
+
         return $this->client->document->moveFile($path, $newpath);
     }
 
@@ -205,9 +224,12 @@ class ContentAdapter extends AbstractAdapter
      */
     public function copy($path, $newpath): Document
     {
+        $path = $this->applyPathPrefix($path);
+        $newpath = $this->applyPathPrefix($newpath);
+
         $contents = $this->client->readRaw($path);
 
-        return $this->client->upload($newpath, $contents, true);
+        return $this->client->upload($newpath, $contents, $this->getPathPrefix(),true);
     }
 
     public function getTimestamp($path)
@@ -261,7 +283,9 @@ class ContentAdapter extends AbstractAdapter
      */
     public function createDir($dirname, Config $config): bool
     {
-        return $this->client->folder->recursiveCreateFolder($dirname);
+        $path = $this->applyPathPrefix($dirname);
+
+        return $this->client->folder->recursiveCreateFolder($path);
     }
 
     /**
@@ -274,7 +298,9 @@ class ContentAdapter extends AbstractAdapter
      */
     public function deleteDir($dirname): bool
     {
-        return $this->client->folder->delete($dirname);
+        $path = $this->applyPathPrefix($dirname);
+
+        return $this->client->folder->delete($path);
     }
 
     /**

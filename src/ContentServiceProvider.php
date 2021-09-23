@@ -27,7 +27,6 @@ class ContentServiceProvider extends AbstractServiceProvider
         Storage::extend('content-file-storage', function ($app, $config) {
             $client = new ContentClient(
                 $config['api_url'],
-                $config['prefix'],
                 $config['repository']
             );
 

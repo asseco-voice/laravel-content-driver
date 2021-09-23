@@ -45,8 +45,6 @@ class Folder extends AbstractContent
 
     public function delete(string $folder, bool $deleteContentWithSubFolders = true): bool
     {
-        $folder = $this->normalizePath($folder);
-
         $deleteContentWithSubFolders = $deleteContentWithSubFolders ? 'true' : 'false';
 
         $folderId = $this->metadataByPath($folder);
@@ -80,16 +78,12 @@ class Folder extends AbstractContent
 
     public function recursiveCreateFile(string $path, string $basePath = '/'): bool
     {
-        $normalizedPath = dirname($this->normalizePath($path));
-
-        return $this->recursiveCreate($normalizedPath, $basePath);
+        return $this->recursiveCreate(dirname($path), $basePath);
     }
 
     public function recursiveCreateFolder(string $path, string $basePath = '/'): bool
     {
-        $normalizedPath = $this->normalizePath($path);
-
-        return $this->recursiveCreate($normalizedPath, $basePath);
+        return $this->recursiveCreate($path, $basePath);
     }
 
     protected function recursiveCreate(string $normalizedPath, string $basePath = '/'): bool
@@ -113,9 +107,8 @@ class Folder extends AbstractContent
         return true;
     }
 
-    public function listDirectory(string $folder = '', bool $recursive = false, int $page = 0, int $perPage = 10, string $order = 'asc'): Response
+    public function listDirectory(string $folder = '', bool $recursive = false, int $page = 0, int $perPage = 10, string $order = 'asc'): array
     {
-        $folder = $this->normalizePath($folder);
         $recursive = $recursive ? 'true' : 'false';
         $url = "{$this->url()}/{$folder}?kind=folder&subfolders={$recursive}&page-size={$perPage}&page={$page}&sort-order={$order}";
 

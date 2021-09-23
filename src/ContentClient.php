@@ -16,14 +16,12 @@ class ContentClient
     public Document $document;
 
     private string $apiUrl;
-    private string $prefix;
     private string $repository;
     private PendingRequest $client;
 
-    public function __construct(string $apiUrl, string $prefix, string $repository)
+    public function __construct(string $apiUrl, string $repository)
     {
         $this->apiUrl = $apiUrl;
-        $this->prefix = $prefix;
         $this->repository = $repository;
 
         $this->client = Http::withToken(request()->bearerToken())
@@ -31,8 +29,8 @@ class ContentClient
                 'Allow' => 'application/json',
             ]);
 
-        $this->folder = new Folder($this->client, $this->url(), $this->prefix, $this->repository);
-        $this->document = new Document($this->client, $this->url(), $this->prefix, $this->repository);
+        $this->folder = new Folder($this->client, $this->url(), $this->repository);
+        $this->document = new Document($this->client, $this->url(), $this->repository);
     }
 
     protected function url(): string
@@ -40,18 +38,18 @@ class ContentClient
         return $this->apiUrl . $this->repository;
     }
 
-    public function upload(string $path, $contents, bool $overwrite = false)
+    public function upload(string $path, $contents, string $purpose = null, bool $overwrite = false)
     {
         $url = $this->folder->createAndReturnUrl($path);
 
-        return $this->document->upload($url, $path, $contents, $overwrite);
+        return $this->document->upload($url, $path, $contents, $purpose, $overwrite);
     }
 
-    public function uploadStream(string $path, $contents, bool $overwrite = false)
+    public function uploadStream(string $path, $contents, string $purpose = null, bool $overwrite = false)
     {
         $url = $this->folder->createAndReturnUrl($path);
 
-        return $this->document->uploadStream($url, $path, $contents, $overwrite);
+        return $this->document->uploadStream($url, $path, $contents, $purpose, $overwrite);
     }
 
     /**

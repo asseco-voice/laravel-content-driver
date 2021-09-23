@@ -22,12 +22,11 @@ class Document extends AbstractContent
         return DocumentResponse::class;
     }
 
-    public function upload(string $url, string $path, $contents, bool $overwrite = false): DocumentResponse
+    public function upload(string $url, string $path, $contents, string $purpose = null, bool $overwrite = false): DocumentResponse
     {
-        $path = $this->normalizePath($path);
         $filename = basename($path);
 
-        $purpose = trim($this->prefix, '/');
+        $purpose = trim($purpose, '/');
 
         $mimeTypeDetector = new ExtensionMimeTypeDetector();
         $mediaType = $mimeTypeDetector->detectMimeTypeFromPath($path);
@@ -56,13 +55,13 @@ class Document extends AbstractContent
         }
     }
 
-    public function uploadStream(string $url, string $path, $resource, bool $overwrite = false): DocumentResponse
+    public function uploadStream(string $url, string $path, $resource, string $purpose = null, bool $overwrite = false): DocumentResponse
     {
         if (!is_resource($resource)) {
             throw new Exception(sprintf('Argument must be a valid resource type. %s given.', gettype($resource)));
         }
 
-        return $this->upload($url, $path, stream_get_contents($resource), $overwrite);
+        return $this->upload($url, $path, stream_get_contents($resource), $purpose, $overwrite);
     }
 
     public function get(string $filename = '/'): Response
@@ -76,8 +75,6 @@ class Document extends AbstractContent
 
     public function getStream(string $filename = '/')
     {
-        $filename = $this->normalizePath($filename);
-
         $filenameId = $this->metadataByPath($filename);
         $url = $this->url() . 'documents/' . $filenameId->id;
         $content = $this->client->get($url)->throw()->body();
@@ -91,8 +88,8 @@ class Document extends AbstractContent
 
     public function moveFile(string $sourceFile, string $destinationFolder, string $destinationRepo = null, bool $overwriteIfExists = true): bool
     {
-        $sourceFile = $this->metadataByPath($this->normalizePath($sourceFile));
-        $destinationFolder = $this->metadataByPath($this->normalizePath(dirname($destinationFolder)));
+        $sourceFile = $this->metadataByPath($sourceFile);
+        $destinationFolder = $this->metadataByPath(dirname($destinationFolder));
 
         $overwriteIfExists = $overwriteIfExists ? 'true' : 'false';
         $destinationRepo = $destinationRepo ?? $this->repository;
@@ -105,7 +102,6 @@ class Document extends AbstractContent
 
     public function delete(string $path): Response
     {
-        $path = $this->normalizePath($path);
         $filenameId = $this->metadataByPath($path);
         $url = $this->url() . 'documents/' . $filenameId->id;
 

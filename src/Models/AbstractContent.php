@@ -9,14 +9,12 @@ abstract class AbstractContent
 {
     protected PendingRequest $client;
     protected string $url;
-    protected string $prefix;
     protected string $repository;
 
-    public function __construct(PendingRequest $client, string $url, string $prefix, string $repository)
+    public function __construct(PendingRequest $client, string $url, string $repository)
     {
         $this->client = $client;
         $this->url = $url;
-        $this->prefix = $prefix;
         $this->repository = $repository;
     }
 
@@ -35,15 +33,6 @@ abstract class AbstractContent
     }
 
     abstract public function apiResourceName();
-
-    protected function normalizePath($path)
-    {
-        if (strpos($path, $this->prefix) === false) {
-            $path = $this->prefix . $path;
-        }
-
-        return $path;
-    }
 
     abstract public function responseClass(): string;
 
@@ -76,8 +65,6 @@ abstract class AbstractContent
 
     protected function pathMetadataUrl(string $path): string
     {
-        $path = $this->normalizePath($path);
-
         return "{$this->url()}/$path/metadata";
     }
 }
