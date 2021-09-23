@@ -4,10 +4,10 @@ namespace Asseco\ContentFileStorageDriver;
 
 use Asseco\ContentFileStorageDriver\Models\Document;
 use Asseco\ContentFileStorageDriver\Models\Folder;
-use Asseco\ContentFileStorageDriver\Responses\ContentItemList;
 use Exception;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Http;
 
 class ContentClient
@@ -28,7 +28,7 @@ class ContentClient
 
         $this->client = Http::withToken(request()->bearerToken())
             ->withHeaders([
-                'Allow'        => 'application/json',
+                'Allow' => 'application/json',
             ]);
 
         $this->folder = new Folder($this->client, $this->url(), $this->prefix, $this->repository);
@@ -77,7 +77,7 @@ class ContentClient
     }
 
     /**
-     * @param  string  $path
+     * @param string $path
      * @return bool
      *
      * @throws Exception
@@ -90,31 +90,29 @@ class ContentClient
     }
 
     /**
-     * @param  string  $directory
-     * @param  bool  $recursive
-     * @return iterable
+     * @param string $directory
+     * @param bool $recursive
+     * @return array
      *
      * @throws Exception
      */
-    public function tree(string $directory = '/', bool $recursive = false): iterable
+    public function tree(string $directory = '/', bool $recursive = false): array
     {
         $page = 1;
+        $directories = [];
 
         do {
-            yield $this->folder->listDirectory($directory, $recursive, 10, ++$page);
-        } while ($this->responseHasNextPage(
-            new ContentItemList(
-                $this->folder->listDirectory($directory, $recursive, 10, ++$page)
-            )
-        ));
-    }
+            $directoryList = $this->folder->listDirectory($directory, $recursive, $page);
 
-    /**
-     * @param  ContentItemList  $response
-     * @return bool
-     */
-    protected function responseHasNextPage(ContentItemList $response): bool
-    {
-        return $response->totalPages > 0 && $response->page != $response->totalPages;
+            $directoryItems = Arr::get($directoryList, 'items');
+            $directoryNames = Arr::pluck($directoryItems, 'name');
+
+            $directories = array_merge($directories, $directoryNames);
+
+            $page++;
+
+        } while ($directoryList['total-pages'] > $directoryList['page']);
+
+        return $directories;
     }
 }

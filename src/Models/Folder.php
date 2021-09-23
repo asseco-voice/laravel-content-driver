@@ -113,12 +113,12 @@ class Folder extends AbstractContent
         return true;
     }
 
-    public function listDirectory(string $folder = '', bool $recursive = false, int $perPage = 10, int $page = 0, string $order = 'asc'): Response
+    public function listDirectory(string $folder = '', bool $recursive = false, int $page = 0, int $perPage = 10, string $order = 'asc'): Response
     {
         $folder = $this->normalizePath($folder);
         $recursive = $recursive ? 'true' : 'false';
-        $url = "{$this->url()}/{$folder}?kind=any&subfolders={$recursive}&page-size={$perPage}&page={$page}&sort-order={$order}";
+        $url = "{$this->url()}/{$folder}?kind=folder&subfolders={$recursive}&page-size={$perPage}&page={$page}&sort-order={$order}";
 
-        return $this->client->get($url)->throw();
+        return $this->client->get($url)->throw()->json();
     }
 }

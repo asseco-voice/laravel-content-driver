@@ -312,11 +312,11 @@ class ContentAdapter extends AbstractAdapter
     /**
      * @param  string  $directory
      * @param  bool  $recursive
-     * @return iterable
+     * @return array
      *
      * @throws Exception
      */
-    public function listContents($directory = '', $recursive = false)
+    public function listContents($directory = '', $recursive = false): array
     {
         return $this->client->tree($directory, $recursive);
     }
