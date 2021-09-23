@@ -106,6 +106,7 @@ class Folder extends AbstractContent
             }
         } catch (Exception $e) {
             Log::error($e);
+
             return false;
         }
 
