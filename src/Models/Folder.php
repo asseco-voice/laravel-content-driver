@@ -6,7 +6,6 @@ use Asseco\ContentFileStorageDriver\Responses\Folder as FolderResponse;
 use Exception;
 use Illuminate\Http\Client\Response;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Log;
 
 class Folder extends AbstractContent
 {
@@ -90,20 +89,16 @@ class Folder extends AbstractContent
     {
         $folders = array_filter(explode('/', $normalizedPath));
 
-        try {
-            foreach ($folders as $folder) {
-                if (!$this->exists($folder, $basePath)) {
-                    $this->create($folder, $basePath);
-                }
-
-                $basePath .= "$folder/";
+        foreach ($folders as $folder) {
+            if (!$this->exists($folder, $basePath)) {
+                $this->create($folder, $basePath);
             }
-        } catch (Exception $e) {
-            Log::error($e);
 
-            return false;
+            $basePath .= "$folder/";
         }
 
+        // Function will return either true, or it will throw an exception.
+        // This is a wanted behavior.
         return true;
     }
 
