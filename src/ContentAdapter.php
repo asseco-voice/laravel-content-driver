@@ -23,11 +23,11 @@ class ContentAdapter extends AbstractAdapter
     }
 
     /**
-     * @param string $path
-     * @param string $contents
-     * @param Config $config
-     *
+     * @param  string  $path
+     * @param  string  $contents
+     * @param  Config  $config
      * @return Document
+     *
      * @throws Exception
      */
     public function write($path, $contents, Config $config): Document
@@ -38,11 +38,11 @@ class ContentAdapter extends AbstractAdapter
     }
 
     /**
-     * @param string $path
-     * @param resource $resource
-     * @param Config $config
-     *
+     * @param  string  $path
+     * @param  resource  $resource
+     * @param  Config  $config
      * @return Document
+     *
      * @throws Exception
      */
     public function writeStream($path, $resource, Config $config): Document
@@ -55,11 +55,11 @@ class ContentAdapter extends AbstractAdapter
     /**
      * Update a file.
      *
-     * @param string $path
-     * @param string $contents
-     * @param Config $config Config object
-     *
+     * @param  string  $path
+     * @param  string  $contents
+     * @param  Config  $config  Config object
      * @return Document
+     *
      * @throws Exception
      */
     public function update($path, $contents, Config $config): Document
@@ -70,11 +70,11 @@ class ContentAdapter extends AbstractAdapter
     /**
      * Update a file using a stream.
      *
-     * @param string $path
-     * @param resource $resource
-     * @param Config $config Config object
-     *
+     * @param  string  $path
+     * @param  resource  $resource
+     * @param  Config  $config  Config object
      * @return Document
+     *
      * @throws Exception
      */
     public function updateStream($path, $resource, Config $config): Document
@@ -86,9 +86,9 @@ class ContentAdapter extends AbstractAdapter
      * Update a file.
      *
      * @param $path
-     * @param resource $resource
-     *
+     * @param  resource  $resource
      * @return Document
+     *
      * @throws Exception
      */
     public function put($path, $resource): Document
@@ -100,9 +100,9 @@ class ContentAdapter extends AbstractAdapter
      * Update a file.
      *
      * @param $path
-     * @param resource $resource
-     *
+     * @param  resource  $resource
      * @return Document
+     *
      * @throws Exception
      */
     public function putStream($path, $resource): Document
@@ -111,9 +111,9 @@ class ContentAdapter extends AbstractAdapter
     }
 
     /**
-     * @param string $path
-     *
+     * @param  string  $path
      * @return array
+     *
      * @throws Exception
      */
     public function read($path)
@@ -122,9 +122,9 @@ class ContentAdapter extends AbstractAdapter
     }
 
     /**
-     * @param string $path
-     *
+     * @param  string  $path
      * @return false|resource
+     *
      * @throws Exception
      */
     public function readStream($path)
@@ -139,8 +139,9 @@ class ContentAdapter extends AbstractAdapter
     }
 
     /**
-     * @param string $path
+     * @param  string  $path
      * @return bool
+     *
      * @throws Exception
      */
     public function has($path): bool
@@ -149,9 +150,9 @@ class ContentAdapter extends AbstractAdapter
     }
 
     /**
-     * @param string $path
-     *
+     * @param  string  $path
      * @return bool
+     *
      * @throws Exception
      */
     public function delete($path): bool
@@ -160,9 +161,9 @@ class ContentAdapter extends AbstractAdapter
     }
 
     /**
-     * @param string $path
-     *
+     * @param  string  $path
      * @return array|false|string
+     *
      * @throws Exception
      */
     public function readAndDelete(string $path)
@@ -183,10 +184,10 @@ class ContentAdapter extends AbstractAdapter
     /**
      * Rename a file.
      *
-     * @param string $path
-     * @param string $newpath
-     *
+     * @param  string  $path
+     * @param  string  $newpath
      * @return bool
+     *
      * @throws Exception
      */
     public function rename($path, $newpath): bool
@@ -197,10 +198,10 @@ class ContentAdapter extends AbstractAdapter
     /**
      * Copy a file.
      *
-     * @param string $path
-     * @param string $newpath
-     *
+     * @param  string  $path
+     * @param  string  $newpath
      * @return Document
+     *
      * @throws Exception
      */
     public function copy($path, $newpath): Document
@@ -219,8 +220,9 @@ class ContentAdapter extends AbstractAdapter
     }
 
     /**
-     * @param string $path
+     * @param  string  $path
      * @return array
+     *
      * @throws Exception
      */
     public function getMimetype($path): array
@@ -236,9 +238,9 @@ class ContentAdapter extends AbstractAdapter
     }
 
     /**
-     * @param string $path
-     *
+     * @param  string  $path
      * @return array
+     *
      * @throws Exception
      */
     public function getSize($path): array
@@ -252,10 +254,10 @@ class ContentAdapter extends AbstractAdapter
     /**
      * Create a directory.
      *
-     * @param string $dirname directory name
-     * @param Config $config
-     *
+     * @param  string  $dirname  directory name
+     * @param  Config  $config
      * @return Folder
+     *
      * @throws Exception
      */
     public function createDir($dirname, Config $config): Folder
@@ -266,8 +268,9 @@ class ContentAdapter extends AbstractAdapter
     /**
      * Delete a directory.
      *
-     * @param string $dirname
+     * @param  string  $dirname
      * @return bool
+     *
      * @throws Exception
      */
     public function deleteDir($dirname): bool
@@ -276,8 +279,8 @@ class ContentAdapter extends AbstractAdapter
     }
 
     /**
-     * @param string $path
-     * @param mixed $visibility
+     * @param  string  $path
+     * @param  mixed  $visibility
      *
      * @throws Exception
      */
@@ -287,7 +290,7 @@ class ContentAdapter extends AbstractAdapter
     }
 
     /**
-     * @param string $path
+     * @param  string  $path
      *
      * @throws Exception
      */
@@ -297,8 +300,9 @@ class ContentAdapter extends AbstractAdapter
     }
 
     /**
-     * @param string $path
+     * @param  string  $path
      * @return false
+     *
      * @throws Exception
      */
     public function getVisibility($path): bool
@@ -307,10 +311,10 @@ class ContentAdapter extends AbstractAdapter
     }
 
     /**
-     * @param string $directory
-     * @param bool $recursive
-     *
+     * @param  string  $directory
+     * @param  bool  $recursive
      * @return iterable
+     *
      * @throws Exception
      */
     public function listContents($directory = '', $recursive = false)
@@ -330,9 +334,9 @@ class ContentAdapter extends AbstractAdapter
     }
 
     /**
-     * @param string $path
-     *
+     * @param  string  $path
      * @return bool
+     *
      * @throws Exception
      */
     public function fileExists(string $path): bool

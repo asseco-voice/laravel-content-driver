@@ -56,8 +56,8 @@ class ContentClient
 
     /**
      * @param $path
-     *
      * @return false|resource
+     *
      * @throws Exception
      */
     public function readStream($path)
@@ -67,8 +67,8 @@ class ContentClient
 
     /**
      * @param $path
-     *
      * @return string
+     *
      * @throws Exception
      */
     public function readRaw($path): string
@@ -77,8 +77,9 @@ class ContentClient
     }
 
     /**
-     * @param string $path
+     * @param  string  $path
      * @return bool
+     *
      * @throws Exception
      */
     public function delete(string $path): bool
@@ -89,10 +90,10 @@ class ContentClient
     }
 
     /**
-     * @param string $directory
-     * @param bool $recursive
-     *
+     * @param  string  $directory
+     * @param  bool  $recursive
      * @return iterable
+     *
      * @throws Exception
      */
     public function tree(string $directory = '/', bool $recursive = false): iterable
@@ -109,8 +110,7 @@ class ContentClient
     }
 
     /**
-     * @param ContentItemList $response
-     *
+     * @param  ContentItemList  $response
      * @return bool
      */
     protected function responseHasNextPage(ContentItemList $response): bool
