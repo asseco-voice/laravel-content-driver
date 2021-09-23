@@ -22,9 +22,9 @@ class ContentAdapter extends AbstractAdapter
     }
 
     /**
-     * @param string $path
-     * @param string $contents
-     * @param Config $config
+     * @param  string  $path
+     * @param  string  $contents
+     * @param  Config  $config
      * @return Document
      *
      * @throws Exception
@@ -38,9 +38,9 @@ class ContentAdapter extends AbstractAdapter
     }
 
     /**
-     * @param string $path
-     * @param resource $resource
-     * @param Config $config
+     * @param  string  $path
+     * @param  resource  $resource
+     * @param  Config  $config
      * @return Document
      *
      * @throws Exception
@@ -56,9 +56,9 @@ class ContentAdapter extends AbstractAdapter
     /**
      * Update a file.
      *
-     * @param string $path
-     * @param string $contents
-     * @param Config $config Config object
+     * @param  string  $path
+     * @param  string  $contents
+     * @param  Config  $config  Config object
      * @return Document
      *
      * @throws Exception
@@ -73,9 +73,9 @@ class ContentAdapter extends AbstractAdapter
     /**
      * Update a file using a stream.
      *
-     * @param string $path
-     * @param resource $resource
-     * @param Config $config Config object
+     * @param  string  $path
+     * @param  resource  $resource
+     * @param  Config  $config  Config object
      * @return Document
      *
      * @throws Exception
@@ -91,7 +91,7 @@ class ContentAdapter extends AbstractAdapter
      * Update a file.
      *
      * @param $path
-     * @param resource $resource
+     * @param  resource  $resource
      * @return Document
      *
      * @throws Exception
@@ -107,7 +107,7 @@ class ContentAdapter extends AbstractAdapter
      * Update a file.
      *
      * @param $path
-     * @param resource $resource
+     * @param  resource  $resource
      * @return Document
      *
      * @throws Exception
@@ -120,7 +120,7 @@ class ContentAdapter extends AbstractAdapter
     }
 
     /**
-     * @param string $path
+     * @param  string  $path
      * @return array
      *
      * @throws Exception
@@ -133,7 +133,7 @@ class ContentAdapter extends AbstractAdapter
     }
 
     /**
-     * @param string $path
+     * @param  string  $path
      * @return false|resource
      *
      * @throws Exception
@@ -151,7 +151,7 @@ class ContentAdapter extends AbstractAdapter
     }
 
     /**
-     * @param string $path
+     * @param  string  $path
      * @return bool
      *
      * @throws Exception
@@ -162,7 +162,7 @@ class ContentAdapter extends AbstractAdapter
     }
 
     /**
-     * @param string $path
+     * @param  string  $path
      * @return bool
      *
      * @throws Exception
@@ -175,7 +175,7 @@ class ContentAdapter extends AbstractAdapter
     }
 
     /**
-     * @param string $path
+     * @param  string  $path
      * @return array|false|string
      *
      * @throws Exception
@@ -198,8 +198,8 @@ class ContentAdapter extends AbstractAdapter
     /**
      * Rename a file.
      *
-     * @param string $path
-     * @param string $newpath
+     * @param  string  $path
+     * @param  string  $newpath
      * @return bool
      *
      * @throws Exception
@@ -216,8 +216,8 @@ class ContentAdapter extends AbstractAdapter
     /**
      * Copy a file.
      *
-     * @param string $path
-     * @param string $newpath
+     * @param  string  $path
+     * @param  string  $newpath
      * @return Document
      *
      * @throws Exception
@@ -241,7 +241,7 @@ class ContentAdapter extends AbstractAdapter
     }
 
     /**
-     * @param string $path
+     * @param  string  $path
      * @return array
      *
      * @throws Exception
@@ -259,7 +259,7 @@ class ContentAdapter extends AbstractAdapter
     }
 
     /**
-     * @param string $path
+     * @param  string  $path
      * @return array
      *
      * @throws Exception
@@ -275,8 +275,8 @@ class ContentAdapter extends AbstractAdapter
     /**
      * Create a directory.
      *
-     * @param string $dirname directory name
-     * @param Config $config
+     * @param  string  $dirname  directory name
+     * @param  Config  $config
      * @return bool
      *
      * @throws Exception
@@ -291,7 +291,7 @@ class ContentAdapter extends AbstractAdapter
     /**
      * Delete a directory.
      *
-     * @param string $dirname
+     * @param  string  $dirname
      * @return bool
      *
      * @throws Exception
@@ -304,8 +304,8 @@ class ContentAdapter extends AbstractAdapter
     }
 
     /**
-     * @param string $path
-     * @param mixed $visibility
+     * @param  string  $path
+     * @param  mixed  $visibility
      *
      * @throws Exception
      */
@@ -315,7 +315,7 @@ class ContentAdapter extends AbstractAdapter
     }
 
     /**
-     * @param string $path
+     * @param  string  $path
      *
      * @throws Exception
      */
@@ -325,7 +325,7 @@ class ContentAdapter extends AbstractAdapter
     }
 
     /**
-     * @param string $path
+     * @param  string  $path
      * @return false
      *
      * @throws Exception
@@ -336,8 +336,8 @@ class ContentAdapter extends AbstractAdapter
     }
 
     /**
-     * @param string $directory
-     * @param bool $recursive
+     * @param  string  $directory
+     * @param  bool  $recursive
      * @return array
      *
      * @throws Exception
@@ -359,7 +359,7 @@ class ContentAdapter extends AbstractAdapter
     }
 
     /**
-     * @param string $path
+     * @param  string  $path
      * @return bool
      *
      * @throws Exception
