@@ -6,7 +6,6 @@ use Asseco\ContentFileStorageDriver\Responses\Document as DocumentResponse;
 use Exception;
 use Illuminate\Http\Client\Response;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use League\MimeTypeDetection\ExtensionMimeTypeDetector;
 
@@ -38,19 +37,13 @@ class Document extends AbstractContent
             'overwrite-if-exists' => $overwrite ? 'true' : 'false',
         ];
 
-        try {
-            $response = $this->client
-                ->attach('content-stream', $contents, $filename)
-                ->post($url, $payload)
-                ->throw();
+        $response = $this->client
+            ->attach('content-stream', $contents, $filename)
+            ->post($url, $payload)
+            ->throw()
+            ->json();
 
-            return new DocumentResponse($response->json());
-        } catch (Exception $e) {
-            Log::error("Couldn't get response for path '{$path}': " . print_r($e->getMessage(), true));
-            Log::error('Filename: ' . print_r($filename, true));
-            Log::error('Contents: ' . print_r($contents, true));
-            throw new Exception($e->getMessage());
-        }
+        return new DocumentResponse($response);
     }
 
     public function uploadStream(string $url, string $path, $resource, bool $overwrite = false): DocumentResponse
@@ -74,7 +67,7 @@ class Document extends AbstractContent
     public function getStream(string $filename = '/')
     {
         $filenameId = $this->metadataByPath($filename);
-        $url = $this->url() . 'documents/' . $filenameId->id;
+        $url = "{$this->url()}/documents/{$filenameId->id}";
         $content = $this->client->get($url)->throw()->body();
 
         // save it to temporary dir first.
@@ -92,7 +85,7 @@ class Document extends AbstractContent
         $overwriteIfExists = $overwriteIfExists ? 'true' : 'false';
         $destinationRepo = $destinationRepo ?? $this->repository;
 
-        $url = "{$this->url()}documents/{$sourceFile->id}/move?destination-folder-id={$destinationFolder->id}&destination-repo={$destinationRepo}&overwrite={$overwriteIfExists}";
+        $url = "{$this->url()}/documents/{$sourceFile->id}/move?destination-folder-id={$destinationFolder->id}&destination-repo={$destinationRepo}&overwrite={$overwriteIfExists}";
         $request = $this->client->post($url)->throw();
 
         return in_array($request->status(), [JsonResponse::HTTP_OK, JsonResponse::HTTP_NO_CONTENT]);
@@ -101,7 +94,7 @@ class Document extends AbstractContent
     public function delete(string $path): Response
     {
         $filenameId = $this->metadataByPath($path);
-        $url = $this->url() . 'documents/' . $filenameId->id;
+        $url = "{$this->url()}/documents/{$filenameId->id}";
 
         return $this->client->delete($url)->throw();
     }

@@ -101,11 +101,17 @@ class ContentClient
 
         do {
             $directoryList = $this->folder->listDirectory($directory, $recursive, $page);
-
             $directoryItems = Arr::get($directoryList, 'items');
-            $directoryNames = Arr::pluck($directoryItems, 'name');
 
-            $directories = array_merge($directories, $directoryNames);
+            foreach ($directoryItems as $directoryItem) {
+                $directories[] = [
+                    'type'       => 'dir',
+                    'path'       => $directoryItem['path'] . $directoryItem['name'],
+                    'visibility' => 'public',
+                    'size'       => 0,
+                    'timestamp'  => 0,
+                ];
+            }
 
             $page++;
         } while ($directoryList['total-pages'] > $directoryList['page']);
