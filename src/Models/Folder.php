@@ -48,7 +48,7 @@ class Folder extends AbstractContent
 
         $folderId = $this->metadataByPath($folder);
 
-        $url = $this->resourceUrl() . '/' . $folderId->id . '?delete-content-and-subfolders=' . $deleteContentWithSubFolders;
+        $url = "{$this->resourceUrl()}/{$folderId->id}?delete-content-and-subfolders={$deleteContentWithSubFolders}";
 
         $request = $this->client->delete($url)->throw();
 
@@ -57,14 +57,14 @@ class Folder extends AbstractContent
 
     public function search(string $search): Response
     {
-        $url = $this->url() . '/search?q=' . $search;
+        $url = "{$this->url()}/search?q={$search}";
 
         return $this->client->get($url)->throw();
     }
 
     public function exists(string $path, string $basePath = '/'): bool
     {
-        $url = $this->url() . trim($basePath . $path, '/') . '/metadata';
+        $url = $this->url() . '/' . trim($basePath . $path, '/') . '/metadata';
 
         try {
             $response = $this->client->get($url);

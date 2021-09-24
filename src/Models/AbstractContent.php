@@ -20,14 +20,14 @@ abstract class AbstractContent
 
     public function url()
     {
-        return rtrim($this->url, '/') . '/';
+        return rtrim($this->url, '/');
     }
 
     public function resourceUrl()
     {
         $resource = trim($this->apiResourceName(), '/');
 
-        return "{$this->url()}$resource";
+        return "{$this->url()}/$resource";
     }
 
     abstract public function apiResourceName();
