@@ -134,11 +134,11 @@ class ContentAdapter extends AbstractAdapter
 
     /**
      * @param  string  $path
-     * @return false|resource
+     * @return array
      *
      * @throws Exception
      */
-    public function readStream($path)
+    public function readStream($path): array
     {
         $path = $this->applyPathPrefix($path);
         $resource = $this->client->readStream($path);
@@ -147,7 +147,7 @@ class ContentAdapter extends AbstractAdapter
             throw new Exception('Unable to read file stream from: ' . $path . 'Empty content');
         }
 
-        return $resource;
+        return ['stream' => $resource];
     }
 
     /**
