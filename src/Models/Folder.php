@@ -28,7 +28,7 @@ class Folder extends AbstractContent
             'folder-purpose' => 'generic-folder',
         ];
 
-        $response = $this->client->post($this->resourceUrl(), $payload)->throw()->json();
+        $response = $this->client()->post($this->resourceUrl(), $payload)->throw()->json();
 
         return new FolderResponse($response);
     }
@@ -50,7 +50,7 @@ class Folder extends AbstractContent
 
         $url = "{$this->resourceUrl()}/{$folderId->id}?delete-content-and-subfolders={$deleteContentWithSubFolders}";
 
-        $request = $this->client->delete($url)->throw();
+        $request = $this->client()->delete($url)->throw();
 
         return $request->status() === JsonResponse::HTTP_OK;
     }
@@ -59,7 +59,7 @@ class Folder extends AbstractContent
     {
         $url = "{$this->url()}/search?q={$search}";
 
-        return $this->client->get($url)->throw();
+        return $this->client()->get($url)->throw();
     }
 
     public function exists(string $path, string $basePath = '/'): bool
@@ -67,7 +67,7 @@ class Folder extends AbstractContent
         $url = $this->url() . '/' . trim($basePath . $path, '/') . '/metadata';
 
         try {
-            $response = $this->client->get($url);
+            $response = $this->client()->get($url);
         } catch (Exception $e) {
             return false;
         }
@@ -107,6 +107,6 @@ class Folder extends AbstractContent
         $recursive = $recursive ? 'true' : 'false';
         $url = "{$this->url()}/{$folder}?kind=folder&subfolders={$recursive}&page-size={$perPage}&page={$page}&sort-order={$order}";
 
-        return $this->client->get($url)->throw()->json();
+        return $this->client()->get($url)->throw()->json();
     }
 }

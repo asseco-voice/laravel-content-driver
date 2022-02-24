@@ -61,14 +61,14 @@ class Document extends AbstractContent
 
         $url = "{$this->resourceUrl()}/{$filenameId->id}";
 
-        return $this->client->get($url)->throw();
+        return $this->client()->get($url)->throw();
     }
 
     public function getStream(string $filename = '/')
     {
         $filenameId = $this->metadataByPath($filename);
         $url = "{$this->url()}/documents/{$filenameId->id}";
-        $content = $this->client->get($url)->throw()->body();
+        $content = $this->client()->get($url)->throw()->body();
 
         // save it to temporary dir first.
         $tmpFilePath = sys_get_temp_dir() . '/' . Str::uuid()->toString();
@@ -86,7 +86,7 @@ class Document extends AbstractContent
         $destinationRepo = $destinationRepo ?? $this->repository;
 
         $url = "{$this->url()}/documents/{$sourceFile->id}/move?destination-folder-id={$destinationFolder->id}&destination-repo={$destinationRepo}&overwrite={$overwriteIfExists}";
-        $request = $this->client->post($url)->throw();
+        $request = $this->client()->post($url)->throw();
 
         return in_array($request->status(), [JsonResponse::HTTP_OK, JsonResponse::HTTP_NO_CONTENT]);
     }
@@ -96,6 +96,6 @@ class Document extends AbstractContent
         $filenameId = $this->metadataByPath($path);
         $url = "{$this->url()}/documents/{$filenameId->id}";
 
-        return $this->client->delete($url)->throw();
+        return $this->client()->delete($url)->throw();
     }
 }

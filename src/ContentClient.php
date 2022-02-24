@@ -5,10 +5,8 @@ namespace Asseco\ContentFileStorageDriver;
 use Asseco\ContentFileStorageDriver\Models\Document;
 use Asseco\ContentFileStorageDriver\Models\Folder;
 use Exception;
-use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Http;
 
 class ContentClient
 {
@@ -17,20 +15,14 @@ class ContentClient
 
     private string $apiUrl;
     private string $repository;
-    private PendingRequest $client;
 
     public function __construct(string $apiUrl, string $repository)
     {
         $this->apiUrl = $apiUrl;
         $this->repository = $repository;
 
-        $this->client = Http::withToken(request()->bearerToken())
-            ->withHeaders([
-                'Allow' => 'application/json',
-            ]);
-
-        $this->folder = new Folder($this->client, $this->url(), $this->repository);
-        $this->document = new Document($this->client, $this->url(), $this->repository);
+        $this->folder = new Folder($this->url(), $this->repository);
+        $this->document = new Document($this->url(), $this->repository);
     }
 
     protected function url(): string
@@ -75,7 +67,7 @@ class ContentClient
     }
 
     /**
-     * @param  string  $path
+     * @param string $path
      * @return bool
      *
      * @throws Exception
@@ -88,8 +80,8 @@ class ContentClient
     }
 
     /**
-     * @param  string  $directory
-     * @param  bool  $recursive
+     * @param string $directory
+     * @param bool $recursive
      * @return array
      *
      * @throws Exception

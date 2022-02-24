@@ -4,18 +4,25 @@ namespace Asseco\ContentFileStorageDriver\Models;
 
 use Asseco\ContentFileStorageDriver\Responses\ContentItem;
 use Illuminate\Http\Client\PendingRequest;
+use Illuminate\Support\Facades\Http;
 
 abstract class AbstractContent
 {
-    protected PendingRequest $client;
     protected string $url;
     protected string $repository;
 
-    public function __construct(PendingRequest $client, string $url, string $repository)
+    public function __construct(string $url, string $repository)
     {
-        $this->client = $client;
         $this->url = $url;
         $this->repository = $repository;
+    }
+
+    public function client(): PendingRequest
+    {
+        return Http::withToken(request()->bearerToken())
+            ->withHeaders([
+                'Allow' => 'application/json',
+            ]);
     }
 
     public function url()
