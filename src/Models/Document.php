@@ -37,7 +37,7 @@ class Document extends AbstractContent
             'overwrite-if-exists' => $overwrite ? 'true' : 'false',
         ];
 
-        $response = $this->client
+        $response = $this->client()
             ->attach('content-stream', $contents, $filename)
             ->post($url, $payload)
             ->throw()

@@ -45,7 +45,7 @@ abstract class AbstractContent
     {
         $url = $this->idMetadataUrl($id);
 
-        $response = $this->client->get($url)->throw()->json();
+        $response = $this->client()->get($url)->throw()->json();
 
         $responseClass = $this->responseClass();
 
@@ -61,7 +61,7 @@ abstract class AbstractContent
     {
         $url = $this->pathMetadataUrl($path);
 
-        $response = $this->client->get($url)->throw()->json();
+        $response = $this->client()->get($url)->throw()->json();
 
         $responseClass = $this->responseClass();
 
