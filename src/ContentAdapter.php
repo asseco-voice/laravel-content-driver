@@ -23,8 +23,9 @@ class ContentAdapter implements FilesystemAdapter
     }
 
     /**
-     * @param string $path
+     * @param  string  $path
      * @return bool
+     *
      * @throws Exception
      */
     public function fileExists(string $path): bool
@@ -44,8 +45,9 @@ class ContentAdapter implements FilesystemAdapter
     }
 
     /**
-     * @param string $path
+     * @param  string  $path
      * @return bool
+     *
      * @throws Exception
      */
     public function directoryExists(string $path): bool
@@ -55,10 +57,11 @@ class ContentAdapter implements FilesystemAdapter
     }
 
     /**
-     * @param string $path
-     * @param string $contents
-     * @param Config $config
+     * @param  string  $path
+     * @param  string  $contents
+     * @param  Config  $config
      * @return void
+     *
      * @throws Exception
      */
     public function write(string $path, string $contents, Config $config): void
@@ -70,10 +73,11 @@ class ContentAdapter implements FilesystemAdapter
     }
 
     /**
-     * @param string $path
+     * @param  string  $path
      * @param $contents
-     * @param Config $config
+     * @param  Config  $config
      * @return void
+     *
      * @throws Exception
      */
     public function writeStream(string $path, $contents, Config $config): void
@@ -85,8 +89,9 @@ class ContentAdapter implements FilesystemAdapter
     }
 
     /**
-     * @param string $path
+     * @param  string  $path
      * @return string
+     *
      * @throws Exception
      */
     public function read(string $path): string
@@ -97,8 +102,9 @@ class ContentAdapter implements FilesystemAdapter
     }
 
     /**
-     * @param string $path
+     * @param  string  $path
      * @return array
+     *
      * @throws Exception
      */
     public function readStream(string $path)
@@ -114,8 +120,9 @@ class ContentAdapter implements FilesystemAdapter
     }
 
     /**
-     * @param string $path
+     * @param  string  $path
      * @return void
+     *
      * @throws Exception
      */
     public function delete(string $path): void
@@ -140,9 +147,10 @@ class ContentAdapter implements FilesystemAdapter
     }
 
     /**
-     * @param string $path
-     * @param string $visibility
+     * @param  string  $path
+     * @param  string  $visibility
      * @return void
+     *
      * @throws Exception
      */
     public function setVisibility(string $path, string $visibility): void
@@ -151,8 +159,9 @@ class ContentAdapter implements FilesystemAdapter
     }
 
     /**
-     * @param string $path
+     * @param  string  $path
      * @return FileAttributes
+     *
      * @throws Exception
      */
     public function visibility(string $path): FileAttributes
@@ -161,8 +170,9 @@ class ContentAdapter implements FilesystemAdapter
     }
 
     /**
-     * @param string $path
+     * @param  string  $path
      * @return FileAttributes
+     *
      * @throws Exception
      */
     public function mimeType(string $path): FileAttributes
@@ -177,29 +187,32 @@ class ContentAdapter implements FilesystemAdapter
     }
 
     /**
-     * @param string $path
+     * @param  string  $path
      * @return FileAttributes
+     *
      * @throws Exception
      */
     public function lastModified(string $path): FileAttributes
     {
-        throw new Exception("Implement this");
+        throw new Exception('Implement this');
     }
 
     /**
-     * @param string $path
+     * @param  string  $path
      * @return FileAttributes
+     *
      * @throws Exception
      */
     public function fileSize(string $path): FileAttributes
     {
-        throw new Exception("Implement this");
+        throw new Exception('Implement this');
     }
 
     /**
-     * @param string $path
-     * @param bool $deep
+     * @param  string  $path
+     * @param  bool  $deep
      * @return iterable
+     *
      * @throws Exception
      */
     public function listContents(string $path, bool $deep): iterable
@@ -216,10 +229,11 @@ class ContentAdapter implements FilesystemAdapter
     }
 
     /**
-     * @param string $source
-     * @param string $destination
-     * @param Config $config
+     * @param  string  $source
+     * @param  string  $destination
+     * @param  Config  $config
      * @return void
+     *
      * @throws Exception
      */
     public function copy(string $source, string $destination, Config $config): void
