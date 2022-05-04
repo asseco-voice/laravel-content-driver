@@ -2,143 +2,106 @@
 
 namespace Asseco\ContentFileStorageDriver;
 
-use Asseco\ContentFileStorageDriver\Responses\Document;
-use Carbon\Carbon;
 use Exception;
-use League\Flysystem\Adapter\AbstractAdapter;
 use League\Flysystem\Config;
+use League\Flysystem\FileAttributes;
+use League\Flysystem\FilesystemAdapter;
+use League\Flysystem\PathPrefixer;
 use League\MimeTypeDetection\ExtensionMimeTypeDetector;
 
-class ContentAdapter extends AbstractAdapter
+class ContentAdapter implements FilesystemAdapter
 {
     protected ContentClient $client;
+    protected PathPrefixer $prefixer;
     protected ExtensionMimeTypeDetector $mimeTypeDetector;
 
     public function __construct(ContentClient $client, string $prefix = '')
     {
         $this->client = $client;
-        $this->setPathPrefix($prefix);
+        $this->prefixer = new PathPrefixer($prefix);
         $this->mimeTypeDetector = new ExtensionMimeTypeDetector();
     }
 
     /**
-     * @param  string  $path
-     * @param  string  $contents
-     * @param  Config  $config
-     * @return Document
-     *
+     * @param string $path
+     * @return bool
      * @throws Exception
      */
-    public function write($path, $contents, Config $config): Document
+    public function fileExists(string $path): bool
+    {
+        try {
+            $path = $this->applyPathPrefix($path);
+            $this->client->document->metadataByPath($path);
+        } catch (Exception $e) {
+            if ($e->getCode() == 404) {
+                return false;
+            }
+
+            throw new Exception('Unable to check file existence for: ' . $path . ' Exception:' . $e->getMessage());
+        }
+
+        return true;
+    }
+
+    /**
+     * @param string $path
+     * @return bool
+     * @throws Exception
+     */
+    public function directoryExists(string $path): bool
+    {
+        // TODO: check this and modify
+        return $this->fileExists($path);
+    }
+
+    /**
+     * @param string $path
+     * @param string $contents
+     * @param Config $config
+     * @return void
+     * @throws Exception
+     */
+    public function write(string $path, string $contents, Config $config): void
     {
         $path = $this->applyPathPrefix($path);
         $overwrite = $this->fileExists($path);
 
-        return $this->client->upload($path, $contents, $overwrite);
+        $this->client->upload($path, $contents, $overwrite);
     }
 
     /**
-     * @param  string  $path
-     * @param  resource  $resource
-     * @param  Config  $config
-     * @return Document
-     *
+     * @param string $path
+     * @param $contents
+     * @param Config $config
+     * @return void
      * @throws Exception
      */
-    public function writeStream($path, $resource, Config $config): Document
+    public function writeStream(string $path, $contents, Config $config): void
     {
         $path = $this->applyPathPrefix($path);
         $overwrite = $this->fileExists($path);
 
-        return $this->client->uploadStream($path, $resource, $overwrite);
+        $this->client->uploadStream($path, $contents, $overwrite);
     }
 
     /**
-     * Update a file.
-     *
-     * @param  string  $path
-     * @param  string  $contents
-     * @param  Config  $config  Config object
-     * @return Document
-     *
+     * @param string $path
+     * @return string
      * @throws Exception
      */
-    public function update($path, $contents, Config $config): Document
+    public function read(string $path): string
     {
         $path = $this->applyPathPrefix($path);
 
-        return $this->client->upload($path, $contents, true);
+        return $this->client->readRaw($path);
     }
 
     /**
-     * Update a file using a stream.
-     *
-     * @param  string  $path
-     * @param  resource  $resource
-     * @param  Config  $config  Config object
-     * @return Document
-     *
-     * @throws Exception
-     */
-    public function updateStream($path, $resource, Config $config): Document
-    {
-        $path = $this->applyPathPrefix($path);
-
-        return $this->client->uploadStream($path, $resource, true);
-    }
-
-    /**
-     * Update a file.
-     *
-     * @param $path
-     * @param  resource  $resource
-     * @return Document
-     *
-     * @throws Exception
-     */
-    public function put($path, $resource): Document
-    {
-        $path = $this->applyPathPrefix($path);
-
-        return $this->client->upload($path, $resource);
-    }
-
-    /**
-     * Update a file.
-     *
-     * @param $path
-     * @param  resource  $resource
-     * @return Document
-     *
-     * @throws Exception
-     */
-    public function putStream($path, $resource): Document
-    {
-        $path = $this->applyPathPrefix($path);
-
-        return $this->client->uploadStream($path, $resource);
-    }
-
-    /**
-     * @param  string  $path
+     * @param string $path
      * @return array
-     *
      * @throws Exception
      */
-    public function read($path)
-    {
-        $path = $this->applyPathPrefix($path);
-
-        return ['contents' => $this->client->readRaw($path)];
-    }
-
-    /**
-     * @param  string  $path
-     * @return array
-     *
-     * @throws Exception
-     */
-    public function readStream($path): array
+    public function readStream(string $path)
     {
         $path = $this->applyPathPrefix($path);
         $resource = $this->client->readStream($path);
@@ -151,233 +114,126 @@ class ContentAdapter extends AbstractAdapter
     }
 
     /**
-     * @param  string  $path
-     * @return bool
-     *
+     * @param string $path
+     * @return void
      * @throws Exception
      */
-    public function has($path): bool
-    {
-        return $this->fileExists($path);
-    }
-
-    /**
-     * @param  string  $path
-     * @return bool
-     *
-     * @throws Exception
-     */
-    public function delete($path): bool
+    public function delete(string $path): void
     {
         $path = $this->applyPathPrefix($path);
-
-        return $this->client->delete($path);
-    }
-
-    /**
-     * @param  string  $path
-     * @return array|false|string
-     *
-     * @throws Exception
-     */
-    public function readAndDelete(string $path)
-    {
-        $path = $this->applyPathPrefix($path);
-
-        $contents = $this->read($path);
-
-        if ($contents === false) {
-            return false;
-        }
 
         $this->client->delete($path);
-
-        return $contents;
     }
 
-    /**
-     * Rename a file.
-     *
-     * @param  string  $path
-     * @param  string  $newpath
-     * @return bool
-     *
-     * @throws Exception
-     */
-    public function rename($path, $newpath): bool
-    {
-        //TODO: implement rename instead of move
-        $path = $this->applyPathPrefix($path);
-        $newpath = $this->applyPathPrefix($newpath);
-
-        return $this->client->document->moveFile($path, $newpath);
-    }
-
-    /**
-     * Copy a file.
-     *
-     * @param  string  $path
-     * @param  string  $newpath
-     * @return Document
-     *
-     * @throws Exception
-     */
-    public function copy($path, $newpath): Document
+    public function deleteDirectory(string $path): void
     {
         $path = $this->applyPathPrefix($path);
-        $newpath = $this->applyPathPrefix($newpath);
 
-        $contents = $this->client->readRaw($path);
-
-        return $this->client->upload($newpath, $contents, true);
+        $this->client->folder->delete($path);
     }
 
-    public function getTimestamp($path)
+    public function createDirectory(string $path, Config $config): void
     {
         $path = $this->applyPathPrefix($path);
-        $response = $this->client->document->metadataByPath($path);
 
-        return ['timestamp' => Carbon::createFromFormat("Y-m-d\TH:i:s.uO", $response->changedOn)->getTimestamp()];
+        $this->client->folder->recursiveCreateFolder($path);
     }
 
     /**
-     * @param  string  $path
-     * @return array
-     *
+     * @param string $path
+     * @param string $visibility
+     * @return void
      * @throws Exception
      */
-    public function getMimetype($path): array
-    {
-        $path = $this->applyPathPrefix($path);
-        $mimeType = $this->mimeTypeDetector->detectMimeTypeFromPath($path);
-
-        if ($mimeType === null) {
-            throw new Exception('Unable to retrieve Metadata mimeType: ' . $path);
-        }
-
-        return ['mimetype' => $mimeType];
-    }
-
-    /**
-     * @param  string  $path
-     * @return array
-     *
-     * @throws Exception
-     */
-    public function getSize($path): array
-    {
-        $path = $this->applyPathPrefix($path);
-        $meta = $this->client->document->metadataByPath($path);
-
-        return ['size' => $meta->sizeInBytes];
-    }
-
-    /**
-     * Create a directory.
-     *
-     * @param  string  $dirname  directory name
-     * @param  Config  $config
-     * @return bool
-     *
-     * @throws Exception
-     */
-    public function createDir($dirname, Config $config): bool
-    {
-        $path = $this->applyPathPrefix($dirname);
-
-        return $this->client->folder->recursiveCreateFolder($path);
-    }
-
-    /**
-     * Delete a directory.
-     *
-     * @param  string  $dirname
-     * @return bool
-     *
-     * @throws Exception
-     */
-    public function deleteDir($dirname): bool
-    {
-        $path = $this->applyPathPrefix($dirname);
-
-        return $this->client->folder->delete($path);
-    }
-
-    /**
-     * @param  string  $path
-     * @param  mixed  $visibility
-     *
-     * @throws Exception
-     */
-    public function setVisibility($path, $visibility): void
+    public function setVisibility(string $path, string $visibility): void
     {
         throw new Exception('Unable to set visibility  : ' . $path . ' ' . get_class($this) . ' Content API does not support visibility.');
     }
 
     /**
-     * @param  string  $path
-     *
+     * @param string $path
+     * @return FileAttributes
      * @throws Exception
      */
-    public function visibility(string $path)
+    public function visibility(string $path): FileAttributes
     {
         throw new Exception('Unable to set visibility  : ' . $path . ' ' . get_class($this) . ' Content API does not support visibility.');
     }
 
     /**
-     * @param  string  $path
-     * @return false
-     *
+     * @param string $path
+     * @return FileAttributes
      * @throws Exception
      */
-    public function getVisibility($path): bool
+    public function mimeType(string $path): FileAttributes
     {
-        throw new Exception('Unable to set visibility : ' . $path . ' ' . get_class($this) . ' Content API does not support visibility.');
+        return new FileAttributes(
+            $path,
+            null,
+            null,
+            null,
+            $this->mimeTypeDetector->detectMimeTypeFromPath($path)
+        );
     }
 
     /**
-     * @param  string  $directory
-     * @param  bool  $recursive
-     * @return array
-     *
+     * @param string $path
+     * @return FileAttributes
      * @throws Exception
      */
-    public function listContents($directory = '', $recursive = false): array
+    public function lastModified(string $path): FileAttributes
     {
-        return $this->client->tree($directory, $recursive);
-    }
-
-    public function getMetadata($path)
-    {
-        $path = $this->applyPathPrefix($path);
-
-        if (substr($path, -1) === '/') {
-            return $this->client->folder->metadataByPath($path);
-        }
-
-        return $this->client->document->metadataByPath($path);
+        throw new Exception("Implement this");
     }
 
     /**
-     * @param  string  $path
-     * @return bool
-     *
+     * @param string $path
+     * @return FileAttributes
      * @throws Exception
      */
-    public function fileExists(string $path): bool
+    public function fileSize(string $path): FileAttributes
     {
-        try {
-            $path = $this->applyPathPrefix($path);
+        throw new Exception("Implement this");
+    }
 
-            $this->client->document->metadataByPath($path);
-        } catch (Exception $e) {
-            if ($e instanceof Exception && $e->getCode() == 404) {
-                return false;
-            }
+    /**
+     * @param string $path
+     * @param bool $deep
+     * @return iterable
+     * @throws Exception
+     */
+    public function listContents(string $path, bool $deep): iterable
+    {
+        return $this->client->tree($path, $deep);
+    }
 
-            throw new Exception('Unable to check file existence for: ' . $path . ' Exception:' . $e->getMessage());
-        }
+    public function move(string $source, string $destination, Config $config): void
+    {
+        $source = $this->applyPathPrefix($source);
+        $destination = $this->applyPathPrefix($destination);
 
-        return true;
+        $this->client->document->moveFile($source, $destination);
+    }
+
+    /**
+     * @param string $source
+     * @param string $destination
+     * @param Config $config
+     * @return void
+     * @throws Exception
+     */
+    public function copy(string $source, string $destination, Config $config): void
+    {
+        $source = $this->applyPathPrefix($source);
+        $destination = $this->applyPathPrefix($destination);
+
+        $contents = $this->client->readRaw($source);
+
+        $this->client->upload($destination, $contents, true);
+    }
+
+    protected function applyPathPrefix($path): string
+    {
+        return '/' . trim($this->prefixer->prefixPath($path), '/');
     }
 }
