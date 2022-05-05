@@ -2,6 +2,7 @@
 
 namespace Asseco\ContentFileStorageDriver;
 
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\ServiceProvider as AbstractServiceProvider;
 use League\Flysystem\Filesystem;
@@ -30,7 +31,13 @@ class ContentServiceProvider extends AbstractServiceProvider
                 $config['repository']
             );
 
-            return new Filesystem(new ContentAdapter($client, $config['root']));
+            $adapter = new ContentAdapter($client, $config['root']);
+
+            return new FilesystemAdapter(
+                new Filesystem($adapter, $config),
+                $adapter,
+                $config
+            );
         });
     }
 }
