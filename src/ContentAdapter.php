@@ -2,6 +2,7 @@
 
 namespace Asseco\ContentFileStorageDriver;
 
+use Asseco\ContentFileStorageDriver\Responses\Document;
 use Exception;
 use League\Flysystem\Config;
 use League\Flysystem\FileAttributes;
@@ -103,7 +104,7 @@ class ContentAdapter implements FilesystemAdapter
 
     /**
      * @param  string  $path
-     * @return array
+     * @return false|resource
      *
      * @throws Exception
      */
@@ -116,7 +117,7 @@ class ContentAdapter implements FilesystemAdapter
             throw new Exception('Unable to read file stream from: ' . $path . 'Empty content');
         }
 
-        return ['stream' => $resource];
+        return $resource;
     }
 
     /**
@@ -177,9 +178,14 @@ class ContentAdapter implements FilesystemAdapter
      */
     public function mimeType(string $path): FileAttributes
     {
+        $path = $this->applyPathPrefix($path);
+
+        /** @var Document $document */
+        $document = $this->client->document->metadataByPath($path);
+
         return new FileAttributes(
             $path,
-            null,
+            $document->sizeInBytes ?: null,
             null,
             null,
             $this->mimeTypeDetector->detectMimeTypeFromPath($path)
@@ -205,7 +211,7 @@ class ContentAdapter implements FilesystemAdapter
      */
     public function fileSize(string $path): FileAttributes
     {
-        throw new Exception('Implement this');
+        return $this->mimeType($path);
     }
 
     /**
