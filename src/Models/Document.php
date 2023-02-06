@@ -26,8 +26,8 @@ class Document extends AbstractContent
         $filename = basename($path);
         $file_extension = pathinfo($filename, PATHINFO_EXTENSION);
 
-        if(!$file_extension) {
-            $filename = $filename . ".bin";
+        if (!$file_extension) {
+            $filename = $filename . '.bin';
         }
 
         $mimeTypeDetector = new ExtensionMimeTypeDetector();
