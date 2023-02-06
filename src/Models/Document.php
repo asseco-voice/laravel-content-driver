@@ -24,9 +24,14 @@ class Document extends AbstractContent
     public function upload(string $url, string $path, $contents, bool $overwrite = false): DocumentResponse
     {
         $filename = basename($path);
+        $file_extension = pathinfo($filename, PATHINFO_EXTENSION);
+
+        if(!$file_extension) {
+            $filename = $filename . ".bin";
+        }
 
         $mimeTypeDetector = new ExtensionMimeTypeDetector();
-        $mediaType = $mimeTypeDetector->detectMimeTypeFromPath($path);
+        $mediaType = $mimeTypeDetector->detectMimeTypeFromPath($path) ?: 'application/octet-stream';
 
         $payload = [
             'content-stream'      => $contents,
