@@ -29,6 +29,7 @@ abstract class AbstractContent
     public function resolveToken(): string
     {
         $context = app(Context::class);
+
         return $context->getToken();
     }
 
