@@ -4,8 +4,117 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "18a210d13658f6a19f0c5f710cdf74c1",
+    "content-hash": "ba2dcf339dc4379ac992fef155e5079f",
     "packages": [
+        {
+            "name": "asseco-voice/laravel-blueprint-audit",
+            "version": "v1.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/asseco-voice/laravel-blueprint-audit.git",
+                "reference": "d3562464ceb396c47f4c64db0c19661750afed72"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/asseco-voice/laravel-blueprint-audit/zipball/d3562464ceb396c47f4c64db0c19661750afed72",
+                "reference": "d3562464ceb396c47f4c64db0c19661750afed72",
+                "shasum": ""
+            },
+            "require": {
+                "laravel/framework": "^9.0",
+                "php": "^8.0"
+            },
+            "require-dev": {
+                "fakerphp/faker": "^1.9.1",
+                "mockery/mockery": "^1.4.4",
+                "orchestra/testbench": "^7.4",
+                "phpunit/phpunit": "^9.5"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Asseco\\BlueprintAudit\\BlueprintAuditServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Asseco\\BlueprintAudit\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "Laravel support for additional blueprint methods",
+            "keywords": [
+                "database",
+                "laravel",
+                "microservices",
+                "php"
+            ],
+            "support": {
+                "issues": "https://github.com/asseco-voice/laravel-blueprint-audit/issues",
+                "source": "https://github.com/asseco-voice/laravel-blueprint-audit/tree/v1.1.0"
+            },
+            "time": "2022-08-30T12:48:14+00:00"
+        },
+        {
+            "name": "asseco-voice/laravel-common",
+            "version": "v2.3.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/asseco-voice/laravel-common.git",
+                "reference": "711e34a7d070923d7665368782259e0a361e5e27"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/asseco-voice/laravel-common/zipball/711e34a7d070923d7665368782259e0a361e5e27",
+                "reference": "711e34a7d070923d7665368782259e0a361e5e27",
+                "shasum": ""
+            },
+            "require": {
+                "asseco-voice/laravel-blueprint-audit": "^1.0",
+                "laravel/framework": "^9.0",
+                "php": "^8.0"
+            },
+            "require-dev": {
+                "fakerphp/faker": "^1.9.1",
+                "mockery/mockery": "^1.4.4",
+                "orchestra/testbench": "^7.4",
+                "phpunit/phpunit": "^9.5"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Asseco\\Common\\CommonServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Asseco\\Common\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "Laravel common",
+            "keywords": [
+                "database",
+                "laravel",
+                "microservices",
+                "php"
+            ],
+            "support": {
+                "issues": "https://github.com/asseco-voice/laravel-common/issues",
+                "source": "https://github.com/asseco-voice/laravel-common/tree/v2.3.0"
+            },
+            "time": "2023-07-03T07:17:47+00:00"
+        },
         {
             "name": "brick/math",
             "version": "0.9.3",
@@ -7890,5 +7999,5 @@
         "ext-json": "*"
     },
     "platform-dev": [],
-    "plugin-api-version": "2.2.0"
+    "plugin-api-version": "2.3.0"
 }

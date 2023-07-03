@@ -28,6 +28,7 @@ abstract class AbstractContent
 
     public function resolveToken(): string
     {
+        /** @var Context $context */
         $context = app(Context::class);
 
         return $context->getToken();
