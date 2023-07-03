@@ -45,7 +45,7 @@ class ContentClient
     }
 
     /**
-     * @param $path
+     * @param  $path
      * @return false|resource
      *
      * @throws Exception
@@ -56,7 +56,7 @@ class ContentClient
     }
 
     /**
-     * @param $path
+     * @param  $path
      * @return string
      *
      * @throws Exception
