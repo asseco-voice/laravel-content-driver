@@ -75,7 +75,7 @@ class ContentAdapter implements FilesystemAdapter
 
     /**
      * @param  string  $path
-     * @param $contents
+     * @param  $contents
      * @param  Config  $config
      * @return void
      *

@@ -2,6 +2,7 @@
 
 namespace Asseco\ContentFileStorageDriver\Models;
 
+use Asseco\Common\App\Context\Context;
 use Asseco\ContentFileStorageDriver\Responses\ContentItem;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Http;
@@ -19,10 +20,18 @@ abstract class AbstractContent
 
     public function client(): PendingRequest
     {
-        return Http::withToken(request()->bearerToken())
+        return Http::withToken($this->resolveToken())
             ->withHeaders([
                 'Allow' => 'application/json',
             ]);
+    }
+
+    public function resolveToken(): string
+    {
+        /** @var Context $context */
+        $context = app(Context::class);
+
+        return $context->getToken();
     }
 
     public function url()
