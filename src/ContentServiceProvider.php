@@ -19,25 +19,27 @@ class ContentServiceProvider extends AbstractServiceProvider
 
     /**
      * Bootstrap the application services.
-     * Extend the storage filesystem withe the new driver.
+     * Extend the storage filesystem with the new driver.
      *
      * @return void
      */
     public function boot()
     {
-        Storage::extend('content-file-storage', function ($app, $config) {
-            $client = new ContentClient(
-                $config['api_url'],
-                $config['repository']
-            );
+        if (config('filesystems.disks.content.should_extend')) {
+            Storage::extend('content-file-storage', function ($app, $config) {
+                $client = new ContentClient(
+                    $config['api_url'],
+                    $config['repository']
+                );
 
-            $adapter = new ContentAdapter($client, $config['root']);
+                $adapter = new ContentAdapter($client, $config['root']);
 
-            return new FilesystemAdapter(
-                new Filesystem($adapter, $config),
-                $adapter,
-                $config
-            );
-        });
+                return new FilesystemAdapter(
+                    new Filesystem($adapter, $config),
+                    $adapter,
+                    $config
+                );
+            });
+        }
     }
 }
