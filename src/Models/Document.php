@@ -34,11 +34,11 @@ class Document extends AbstractContent
         $mediaType = $mimeTypeDetector->detectMimeTypeFromPath($path) ?: 'application/octet-stream';
 
         $payload = [
-            'content-stream'      => $contents,
-            'name'                => $filename,
-            'media-type'          => $mediaType,
-            'filing-purpose'      => 'service',
-            'filing-case-number'  => 'record id',
+            'content-stream' => $contents,
+            'name' => $filename,
+            'media-type' => $mediaType,
+            'filing-purpose' => 'service',
+            'filing-case-number' => 'record id',
             'overwrite-if-exists' => $overwrite ? 'true' : 'false',
         ];
 
