@@ -97,11 +97,11 @@ class ContentClient
 
             foreach ($directoryItems as $directoryItem) {
                 $directories[] = [
-                    'type'       => 'dir',
-                    'path'       => $directoryItem['path'] . $directoryItem['name'],
+                    'type' => 'dir',
+                    'path' => $directoryItem['path'] . $directoryItem['name'],
                     'visibility' => 'public',
-                    'size'       => 0,
-                    'timestamp'  => 0,
+                    'size' => 0,
+                    'timestamp' => 0,
                 ];
             }
 

@@ -22,9 +22,9 @@ class Folder extends AbstractContent
     public function create(string $name, string $path = '/'): FolderResponse
     {
         $payload = [
-            'name'           => $name,
-            'path'           => $path,
-            'kind'           => 'folder',
+            'name' => $name,
+            'path' => $path,
+            'kind' => 'folder',
             'folder-purpose' => 'generic-folder',
         ];
 
